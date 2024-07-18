@@ -83,9 +83,14 @@ target_include_directories(${PROJECT_NAME}-lib PUBLIC
 
 #include_directories(${PROJECT_NAME}-test PUBLIC ${GTEST_INCLUDE_DIRS})
 
+# Ensure DataFrame is built before the executable
+add_dependencies(${PROJECT_NAME} DataFrame-lib)
+
 # Link the executable with the library
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread)
+
+add_subdirectory(external/DataFrame EXCLUDE_FROM_ALL)
 
 # Link Unit Test executable with the library
 #target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib)
