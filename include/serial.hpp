@@ -52,6 +52,7 @@ typedef enum _speed_t {
 
 #endif
 #include <string>
+#include "data-frame.hpp"
 
 class Serial {
   private:
@@ -64,9 +65,11 @@ class Serial {
     unsigned int timeout;
     unsigned int keepAliveMs;
     std::vector <unsigned char> data;
+    std::vector <unsigned char> remainingData;
     std::string port;
     pthread_mutex_t mtx;
   public:
+    DataFrame frameFormat;
     /**
      * @brief Default constructor.
      *
@@ -186,6 +189,28 @@ class Serial {
      * @return 2 jika timeout.
      */
     int readData();
+
+    /**
+     * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param startBytes data start bytes yang ingin ditemukan.
+     * @param sz ukuran data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readStartBytes(const unsigned char *startBytes, size_t sz);
+
+    /**
+     * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readFramedData();
 
     /**
      * @brief berfungsi untuk melakukan pengambilan data buffer read.
