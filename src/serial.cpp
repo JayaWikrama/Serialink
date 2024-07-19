@@ -243,6 +243,10 @@ int Serial::readData(){
     int idx = 0;
     unsigned char tmp[128];
     this->data.clear();
+    if (this->remainingData.size() > 0){
+        this->data.assign(this->remainingData.begin(), this->remainingData.end());
+        this->remainingData.clear();
+    }
     do {
 #if defined(PLATFORM_POSIX) || defined(__linux__)
         if (this->data.size() > 0) {
