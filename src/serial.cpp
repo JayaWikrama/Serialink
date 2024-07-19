@@ -290,6 +290,57 @@ int Serial::readData(){
 }
 
 /**
+ * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param startBytes data start bytes yang ingin ditemukan.
+ * @param sz ukuran data start bytes yang ingin ditemukan.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
+    size_t i = 0;
+    bool found = false;
+    int ret = 0;
+    do {
+        ret = this->readData();
+        if (!ret){
+            for (i = 0; i <= this->data.size() - sz; i++){
+                if (memcmp(this->data.data() + i, startBytes, sz) == 0){
+                    if (i > 0){
+                        this->data.erase(this->data.begin(), this->data.begin() + i);
+                    }
+                    this->remainingData.assign(this->data.begin() + sz, this->data.end());
+                    this->data.erase(this->data.begin() + sz, this->data.end());
+                    found = true;
+                    break;
+                }
+            }
+        }
+    } while(found == false && ret == 0);
+    return ret;
+}
+
+/**
+ * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readFramedData(){
+    /* pre set */
+
+    /* execute */
+    this->frameFormat.execute();
+
+    /* post check */
+    return 0;
+}
+
+/**
  * @brief berfungsi untuk melakukan pengambilan data buffer read.
  *
  * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
@@ -301,6 +352,27 @@ size_t Serial::getBuffer(unsigned char *buffer, size_t maxBufferSz){
     pthread_mutex_lock(&(this->mtx));
     size_t result = (this->data.size() < maxBufferSz ? this->data.size() : maxBufferSz);
     for (auto i = this->data.begin(); i != this->data.end(); i++){
+        if (result == 0) break;
+        *buffer = *i;
+        buffer++;
+        result--;
+    }
+    pthread_mutex_unlock(&(this->mtx));
+    return result;
+}
+
+/**
+ * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer.
+ *
+ * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.
+ * @param buffer variable untuk menampung data serial yang sukses terbaca.
+ * @param maxBufferSz batasan ukuran data maksimum yang dapat ditampung oleh variable buffer.
+ * @return ukuran atau size data serial.
+ */
+size_t Serial::getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz){
+    pthread_mutex_lock(&(this->mtx));
+    size_t result = (this->remainingData.size() < maxBufferSz ? this->remainingData.size() : maxBufferSz);
+    for (auto i = this->remainingData.begin(); i != this->remainingData.end(); i++){
         if (result == 0) break;
         *buffer = *i;
         buffer++;

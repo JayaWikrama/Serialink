@@ -223,6 +223,16 @@ class Serial {
     size_t getBuffer(unsigned char *buffer, size_t maxBufferSz);
 
     /**
+     * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer.
+     *
+     * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.
+     * @param buffer variable untuk menampung data serial yang sukses terbaca.
+     * @param maxBufferSz batasan ukuran data maksimum yang dapat ditampung oleh variable buffer.
+     * @return ukuran atau size data serial.
+     */
+    size_t getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz);
+
+    /**
      * @brief berfungsi untuk melakukan operasi penulisan data serial.
      *
      * Berfungsi untuk melakukan operasi penulisan data serial.
