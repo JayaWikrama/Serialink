@@ -69,7 +69,7 @@ class Serial {
     std::string port;
     pthread_mutex_t mtx;
   public:
-    DataFrame frameFormat;
+    DataFrame *frameFormat;
     /**
      * @brief Default constructor.
      *

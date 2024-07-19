@@ -29,6 +29,7 @@ Serial::Serial(){
     this->baud = B9600;
     this->timeout = 10;
     this->port = "/dev/ttyUSB0";
+    this->frameFormat = nullptr;
     pthread_mutex_init(&(this->mtx), NULL);
 }
 
@@ -50,6 +51,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
     this->baud = baud;
     this->timeout = timeout;
     this->port = port;
+    this->frameFormat = nullptr;
     pthread_mutex_init(&(this->mtx), NULL);
 }
 
@@ -60,12 +62,18 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
  */
 Serial::~Serial(){
     pthread_mutex_lock(&(this->mtx));
-    #if defined(PLATFORM_POSIX) || defined(__linux__)
-    if (this->fd > 0) close(this->fd);
-    this->fd = -1;
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    if (this->fd > 0){
+        close(this->fd);
+        this->fd = -1;
+    }
 #else
     CloseHandle(this->fd);
 #endif
+    if (this->frameFormat != nullptr){
+        delete this->frameFormat;
+        this->frameFormat = nullptr;
+    }
     pthread_mutex_unlock(&(this->mtx));
     pthread_mutex_destroy(&(this->mtx));
 }
