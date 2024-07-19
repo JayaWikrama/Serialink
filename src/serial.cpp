@@ -335,6 +335,52 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
 }
 
 /**
+ * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga sejumlah data yang diinginkan terpenuhi.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial hingga sejumlah data yang diinginkan terpenuhi. Pengulangan dilakukan maksimal 3 kali terhitung setelah data pertama diterima. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param sz ukuran data serial yang ingin dibaca.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readNBytes(size_t sz){
+    size_t i = 0;
+    std::vector <unsigned char> tmp;
+    int ret = 0;
+    int tryTimes = 0;
+    bool isRcvFirstBytes = false;
+    do {
+        ret = this->readData();
+        if (!ret){
+            if (isRcvFirstBytes == false){
+                tryTimes = 3;
+                isRcvFirstBytes = true;
+            }
+            tmp.insert(tmp.end(), this->data.begin(), this->data.end());
+            if (tmp.size() >= sz) break;
+        }
+        else if (isRcvFirstBytes == true) {
+            tryTimes--;
+        }
+    } while(tryTimes > 0);
+    if (tmp.size() < sz){
+        this->data.assign(tmp.begin(), tmp.end());
+        return 2;
+    }
+    if (this->data.size() != tmp.size()){
+        this->data.clear();
+        this->data.assign(tmp.begin(), tmp.begin() + sz);
+        if (tmp.size() > sz) this->remainingData.assign(tmp.begin() + sz, tmp.end());
+        return 0;
+    }
+    if (this->data.size() > sz){
+        this->remainingData.assign(this->data.begin() + sz, this->data.end());
+        this->data.erase(this->data.begin() + sz, this->data.end());
+    }
+    return 0;
+}
+
+/**
  * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
  *
  * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
@@ -346,7 +392,7 @@ int Serial::readFramedData(){
     /* pre set */
 
     /* execute */
-    this->frameFormat.execute();
+    //this->frameFormat.execute();
 
     /* post check */
     return 0;
