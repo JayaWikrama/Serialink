@@ -75,6 +75,7 @@ add_executable(${PROJECT_NAME} examples/main.cpp)
 target_include_directories(${PROJECT_NAME}-lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/DataFrame/include>
   $<INSTALL_INTERFACE:include>
   ${SQLITE3_INCLUDE_DIRS}
   ${OPENCV_INCLUDE_DIRS}
