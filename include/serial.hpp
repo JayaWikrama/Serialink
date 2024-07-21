@@ -203,6 +203,18 @@ class Serial {
     int readStartBytes(const unsigned char *startBytes, size_t sz);
 
     /**
+     * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param stopBytes data start bytes yang ingin ditemukan.
+     * @param sz ukuran data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readUntilStopBytes(const unsigned char *stopBytes, size_t sz);
+
+    /**
      * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga sejumlah data yang diinginkan terpenuhi.
      *
      * Berfungsi untuk melakukan operasi pembacaan data serial hingga sejumlah data yang diinginkan terpenuhi. Pengulangan dilakukan maksimal 3 kali terhitung setelah data pertama diterima. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
