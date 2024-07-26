@@ -92,6 +92,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread)
 
 add_subdirectory(external/DataFrame EXCLUDE_FROM_ALL)
+set(USE_EXE_FUNC ON)
+set(USE_POST_EXE_FUNC ON)
+add_definitions(-D__USE_EXE_FUNC)
+add_definitions(-D__USE_POST_FUNC)
 
 # Link Unit Test executable with the library
 #target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib)
