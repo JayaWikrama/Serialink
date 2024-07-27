@@ -316,8 +316,15 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
     bool found = false;
     int ret = 0;
     do {
-        ret = this->readData();
-        if (!ret){
+        if (this->remainingData.size() > 0){
+            this->data.assign(this->remainingData.begin(), this->remainingData.end());
+            this->remainingData.clear();
+            ret = 0;
+        }
+        else {
+            ret = this->readData();
+        }
+        if (!ret && this->data.size() >= sz){
             for (i = 0; i <= this->data.size() - sz; i++){
                 if (memcmp(this->data.data() + i, startBytes, sz) == 0){
                     if (i > 0){
@@ -353,7 +360,14 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
     int tryTimes = 0;
     bool isRcvFirstBytes = false;
     do {
-        ret = this->readData();
+        if (this->remainingData.size() > 0){
+            this->data.assign(this->remainingData.begin(), this->remainingData.end());
+            this->remainingData.clear();
+            ret = 0;
+        }
+        else {
+            ret = this->readData();
+        }
         if (!ret){
             if (isRcvFirstBytes == false){
                 tryTimes = 3;
@@ -403,7 +417,14 @@ int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
     bool found = false;
     int ret = 0;
     do {
-        ret = this->readData();
+        if (this->remainingData.size() > 0){
+            this->data.assign(this->remainingData.begin(), this->remainingData.end());
+            this->remainingData.clear();
+            ret = 0;
+        }
+        else {
+            ret = this->readData();
+        }
         if (!ret){
             if (this->data.size() >= sz){
                 if (this->data.size() > sz){
@@ -436,7 +457,14 @@ int Serial::readNBytes(size_t sz){
     int tryTimes = 0;
     bool isRcvFirstBytes = false;
     do {
-        ret = this->readData();
+        if (this->remainingData.size() > 0){
+            this->data.assign(this->remainingData.begin(), this->remainingData.end());
+            this->remainingData.clear();
+            ret = 0;
+        }
+        else {
+            ret = this->readData();
+        }
         if (!ret){
             if (isRcvFirstBytes == false){
                 tryTimes = 3;
