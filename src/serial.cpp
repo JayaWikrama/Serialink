@@ -534,6 +534,19 @@ size_t Serial::getBuffer(unsigned char *buffer, size_t maxBufferSz){
 }
 
 /**
+ * @brief berfungsi untuk melakukan pengambilan data buffer read.
+ *
+ * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
+ * @param buffer variable untuk menampung data serial yang sukses terbaca.
+ * @return ukuran atau size data serial.
+ */
+size_t Serial::getBuffer(std::vector <unsigned char> &buffer){
+    buffer.clear();
+    buffer.assign(this->data.begin(), this->data.end());
+    return buffer.size();
+}
+
+/**
  * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer.
  *
  * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.

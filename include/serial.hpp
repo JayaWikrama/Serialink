@@ -239,16 +239,6 @@ class Serial {
     int readNBytes(size_t sz);
 
     /**
-     * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
-     *
-     * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
-     * @return 0 jika sukses.
-     * @return 1 jika port belum terbuka.
-     * @return 2 jika timeout.
-     */
-    int readFramedData();
-
-    /**
      * @brief berfungsi untuk melakukan pengambilan data buffer read.
      *
      * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
@@ -257,6 +247,15 @@ class Serial {
      * @return ukuran atau size data serial.
      */
     size_t getBuffer(unsigned char *buffer, size_t maxBufferSz);
+
+    /**
+     * @brief berfungsi untuk melakukan pengambilan data buffer read.
+     *
+     * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
+     * @param buffer variable untuk menampung data serial yang sukses terbaca.
+     * @return ukuran atau size data serial.
+     */
+    size_t getBuffer(std::vector <unsigned char> &buffer);
 
     /**
      * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer.
