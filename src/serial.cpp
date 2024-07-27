@@ -233,11 +233,12 @@ bool Serial::isInputBytesAvailable(){
  * @brief berfungsi untuk melakukan operasi pembacaan data serial.
  *
  * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param sz jumlah data yang ingin dibaca. __sz__ = 0 berarti jumlah data yang akan dibaca tidak terbatas (hingga __keepAliveMs__ terpenuhi).
  * @return 0 jika sukses.
  * @return 1 jika port belum terbuka.
  * @return 2 jika timeout.
  */
-int Serial::readData(){
+int Serial::readData(size_t sz){
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     if (this->fd <= 0){
@@ -292,13 +293,29 @@ int Serial::readData(){
                 this->data.push_back(tmp[idx]);
             }
         }
-    } while (bytes > 0);
+    } while (bytes > 0 && (sz == 0 || this->data.size() < sz));
     if (this->data.size() == 0){
         pthread_mutex_unlock(&(this->mtx));
         return 2;
     }
+    if (sz > 0 && this->data.size() > sz){
+        this->remainingData.assign(this->data.begin() + sz, this->data.end());
+        this->data.erase(this->data.begin() + sz, this->data.end());
+    }
     pthread_mutex_unlock(&(this->mtx));
     return 0;
+}
+
+/**
+ * @brief berfungsi untuk melakukan operasi pembacaan data serial.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readData(){
+    return this->readData(0);
 }
 
 /**
@@ -313,8 +330,11 @@ int Serial::readData(){
  */
 int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
     size_t i = 0;
+    size_t idxCheck = 0;
     bool found = false;
     int ret = 0;
+    std::vector <unsigned char> tmp;
+    bool isRcvFirstBytes = false;
     do {
         if (this->remainingData.size() > 0){
             this->data.assign(this->remainingData.begin(), this->remainingData.end());
@@ -322,22 +342,33 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData();
+            ret = this->readData(sz);
         }
-        if (!ret && this->data.size() >= sz){
-            for (i = 0; i <= this->data.size() - sz; i++){
-                if (memcmp(this->data.data() + i, startBytes, sz) == 0){
-                    if (i > 0){
-                        this->data.erase(this->data.begin(), this->data.begin() + i);
-                    }
-                    this->remainingData.assign(this->data.begin() + sz, this->data.end());
-                    this->data.erase(this->data.begin() + sz, this->data.end());
+        if (!ret){
+            if (isRcvFirstBytes == false){
+                isRcvFirstBytes = true;
+            }
+            else if (tmp.size() > sz){
+                idxCheck = tmp.size() + 1 - sz;
+            }
+            tmp.insert(tmp.end(), this->data.begin(), this->data.end());
+            if (this->remainingData.size() > 0){
+                tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
+                this->remainingData.clear();
+            }
+            for (i = idxCheck; i <= tmp.size() - sz; i++){
+                if (memcmp(tmp.data() + i, startBytes, sz) == 0){
                     found = true;
                     break;
                 }
             }
         }
     } while(found == false && ret == 0);
+    if (found == true){
+        this->data.clear();
+        this->data.assign(tmp.begin() + i, tmp.begin() + i + sz);
+        if (tmp.size() > i + sz) this->remainingData.assign(tmp.begin() + i + sz, tmp.end());
+    }
     return ret;
 }
 
@@ -357,7 +388,6 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
     bool found = false;
     int ret = 0;
     std::vector <unsigned char> tmp;
-    int tryTimes = 0;
     bool isRcvFirstBytes = false;
     do {
         if (this->remainingData.size() > 0){
@@ -366,15 +396,19 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData();
+            ret = this->readData(sz);
         }
         if (!ret){
             if (isRcvFirstBytes == false){
-                tryTimes = 3;
                 isRcvFirstBytes = true;
             }
             else if (tmp.size() > sz){
-                idxCheck = tmp.size() - sz;
+                idxCheck = tmp.size() + 1 - sz;
+            }
+            tmp.insert(tmp.end(), this->data.begin(), this->data.end());
+            if (this->remainingData.size() > 0){
+                tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
+                this->remainingData.clear();
             }
             tmp.insert(tmp.end(), this->data.begin(), this->data.end());
             for (i = idxCheck; i <= tmp.size() - sz; i++){
@@ -423,7 +457,7 @@ int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData();
+            ret = this->readData(sz);
         }
         if (!ret){
             if (this->data.size() >= sz){
@@ -463,7 +497,7 @@ int Serial::readNBytes(size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData();
+            ret = this->readData(sz);
         }
         if (!ret){
             if (isRcvFirstBytes == false){

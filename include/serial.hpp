@@ -184,6 +184,17 @@ class Serial {
      * @brief berfungsi untuk melakukan operasi pembacaan data serial.
      *
      * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param sz jumlah data yang ingin dibaca. __sz__ = 0 berarti jumlah data yang akan dibaca tidak terbatas (hingga __keepAliveMs__ terpenuhi).
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readData(size_t sz);
+
+    /**
+     * @brief berfungsi untuk melakukan operasi pembacaan data serial.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
      * @return 0 jika sukses.
      * @return 1 jika port belum terbuka.
      * @return 2 jika timeout.
