@@ -52,7 +52,6 @@ typedef enum _speed_t {
 
 #endif
 #include <string>
-#include "data-frame.hpp"
 
 class Serial {
   private:
@@ -68,8 +67,40 @@ class Serial {
     std::vector <unsigned char> remainingData;
     std::string port;
     pthread_mutex_t mtx;
+  protected:
+    /**
+     * @brief setter untuk file descriptor.
+     *
+     * Berfungsi untuk melakukan setup nilai file descriptor.
+     * @param fd file descriptor.
+     */
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    void setFileDescriptor(int fd);
+#else
+    void setFileDescriptor(HANDLE fd);
+#endif
+
+    /**
+     * @brief getter untuk file descriptor.
+     *
+     * Berfungsi untuk melakukan pengambilan informasi nilai file descriptor.
+     * @return file descriptor.
+     */
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    int getFileDescriptor();
+#else
+    HANDLE getFileDescriptor();
+#endif
+
+    /**
+     * @brief setup serial attributes.
+     *
+     * Berfungsi untuk melakukan setup atau pengaturan pada atribut file descriptor dari port serial yang sukses terbuka.
+     * @return true jika sukses
+     * @return false jika gagal
+     */
+    bool setupAttributes();
   public:
-    DataFrame *frameFormat;
     /**
      * @brief Default constructor.
      *

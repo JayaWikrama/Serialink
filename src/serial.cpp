@@ -12,6 +12,100 @@
 #include "serial.hpp"
 
 /**
+ * @brief setter untuk file descriptor.
+ *
+ * Berfungsi untuk melakukan setup nilai file descriptor.
+ * @param fd file descriptor.
+ */
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+void Serial::setFileDescriptor(int fd)
+#else
+void Serial::setFileDescriptor(HANDLE fd)
+#endif
+{
+    pthread_mutex_lock(&(this->mtx));
+    this->fd = fd;
+    pthread_mutex_unlock(&(this->mtx));
+}
+
+/**
+ * @brief getter untuk file descriptor.
+ *
+ * Berfungsi untuk melakukan pengambilan informasi nilai file descriptor.
+ * @return file descriptor.
+ */
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    int Serial::getFileDescriptor()
+#else
+    HANDLE Serial::getFileDescriptor()
+#endif
+{
+    return this->fd;
+}
+
+/**
+ * @brief setup serial attributes.
+ *
+ * Berfungsi untuk melakukan setup atau pengaturan pada atribut file descriptor dari port serial yang sukses terbuka.
+ * @return true jika sukses
+ * @return false jika gagal
+ */
+bool Serial::setupAttributes(){
+    pthread_mutex_lock(&(this->mtx));
+    bool result = false;
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    struct termios ttyAttr;
+    memset (&ttyAttr, 0, sizeof(ttyAttr));
+    result = (tcgetattr(this->fd, &ttyAttr) == 0);
+#else
+    result = FlushFileBuffers(this->fd);
+#endif
+    if (result == false){
+        pthread_mutex_unlock(&(this->mtx));
+        return false;
+    }
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    cfsetospeed (&ttyAttr, this->baud);
+    ttyAttr.c_cflag = (ttyAttr.c_cflag & ~CSIZE) | CS8; // 8-bit chars
+    ttyAttr.c_iflag &= ~IGNBRK; // disable break processing
+    ttyAttr.c_lflag = 0; // no signaling chars, no echo, no canonical processing
+    ttyAttr.c_oflag = 0; // no remapping, no delays
+    ttyAttr.c_cc[VMIN]  = 0; // blocking mode
+    ttyAttr.c_cc[VTIME] = this->timeout; // per 100ms read timeout
+    ttyAttr.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+    ttyAttr.c_cflag |= (CLOCAL | CREAD); // ignore modem controls, enable reading
+    ttyAttr.c_cflag &= ~(PARENB | PARODD); // shut off parity
+    ttyAttr.c_cflag |= 0;
+    ttyAttr.c_cflag &= ~CSTOPB;
+    ttyAttr.c_cflag &= ~CRTSCTS;
+    ttyAttr.c_iflag &= ~(INLCR | ICRNL);
+    result = (tcsetattr (this->fd, TCSANOW, &ttyAttr) == 0);
+#else
+    COMMTIMEOUTS timeouts = {0};
+    timeouts.ReadIntervalTimeout = 50;
+    timeouts.ReadTotalTimeoutConstant = this->timeout;
+    timeouts.ReadTotalTimeoutMultiplier = 50;
+    timeouts.WriteTotalTimeoutConstant = this->timeout;
+    timeouts.WriteTotalTimeoutMultiplier = 50;
+    result = SetCommTimeouts(this->fd, &timeouts);
+    if (result == true){
+        DCB state = {0};
+        state.DCBlength=sizeof(DCB);
+        result = GetCommState(this->fd, &state);
+        if (result == true){
+            state.BaudRate = static_cast<uint32_t>(this->baud);
+            state.ByteSize = 8;
+            state.Parity = NOPARITY;
+            state.StopBits = ONESTOPBIT;
+            result = SetCommState(this->fd, &state);
+        }
+    }
+#endif
+    pthread_mutex_unlock(&(this->mtx));
+    return result;
+}
+
+/**
  * @brief Default constructor.
  *
  * Berfungsi untuk melakukan setup private data dan parameter ke nilai default. Diantaranya:
@@ -29,7 +123,6 @@ Serial::Serial(){
     this->baud = B9600;
     this->timeout = 10;
     this->port = "/dev/ttyUSB0";
-    this->frameFormat = nullptr;
     pthread_mutex_init(&(this->mtx), NULL);
 }
 
@@ -51,7 +144,6 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
     this->baud = baud;
     this->timeout = timeout;
     this->port = port;
-    this->frameFormat = nullptr;
     pthread_mutex_init(&(this->mtx), NULL);
 }
 
@@ -70,10 +162,6 @@ Serial::~Serial(){
 #else
     CloseHandle(this->fd);
 #endif
-    if (this->frameFormat != nullptr){
-        delete this->frameFormat;
-        this->frameFormat = nullptr;
-    }
     pthread_mutex_unlock(&(this->mtx));
     pthread_mutex_destroy(&(this->mtx));
 }
@@ -146,55 +234,9 @@ int Serial::openPort(){
         pthread_mutex_unlock(&(this->mtx));
 		return 1;
 	}
-    bool success = false;
-#if defined(PLATFORM_POSIX) || defined(__linux__)
-    struct termios ttyAttr;
-    memset (&ttyAttr, 0, sizeof(ttyAttr));
-    success = (tcgetattr(this->fd, &ttyAttr) == 0);
-#else
-    success = FlushFileBuffers(this->fd);
-#endif
-    if (success == false){
-        pthread_mutex_unlock(&(this->mtx));
-        return 1;
-    }
-#if defined(PLATFORM_POSIX) || defined(__linux__)
-    cfsetospeed (&ttyAttr, this->baud);
-    ttyAttr.c_cflag = (ttyAttr.c_cflag & ~CSIZE) | CS8; // 8-bit chars
-    ttyAttr.c_iflag &= ~IGNBRK; // disable break processing
-    ttyAttr.c_lflag = 0; // no signaling chars, no echo, no canonical processing
-    ttyAttr.c_oflag = 0; // no remapping, no delays
-    ttyAttr.c_cc[VMIN]  = 0; // blocking mode
-    ttyAttr.c_cc[VTIME] = this->timeout; // per 100ms read timeout
-    ttyAttr.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
-    ttyAttr.c_cflag |= (CLOCAL | CREAD); // ignore modem controls, enable reading
-    ttyAttr.c_cflag &= ~(PARENB | PARODD); // shut off parity
-    ttyAttr.c_cflag |= 0;
-    ttyAttr.c_cflag &= ~CSTOPB;
-    ttyAttr.c_cflag &= ~CRTSCTS;
-    ttyAttr.c_iflag &= ~(INLCR | ICRNL);
-    success = (tcsetattr (this->fd, TCSANOW, &ttyAttr) == 0);
-#else
-    COMMTIMEOUTS timeouts = {0};
-    timeouts.ReadIntervalTimeout = 50;
-    timeouts.ReadTotalTimeoutConstant = this->timeout;
-    timeouts.ReadTotalTimeoutMultiplier = 50;
-    timeouts.WriteTotalTimeoutConstant = this->timeout;
-    timeouts.WriteTotalTimeoutMultiplier = 50;
-    success = SetCommTimeouts(this->fd, &timeouts);
-    if (success == true){
-        DCB state = {0};
-        state.DCBlength=sizeof(DCB);
-        success = GetCommState(this->fd, &state);
-        if (success == true){
-            state.BaudRate = static_cast<uint32_t>(this->baud);
-            state.ByteSize = 8;
-            state.Parity = NOPARITY;
-            state.StopBits = ONESTOPBIT;
-            success = SetCommState(this->fd, &state);
-        }
-    }
-#endif
+    pthread_mutex_unlock(&(this->mtx));
+    bool success = this->setupAttributes();
+    pthread_mutex_lock(&(this->mtx));
     if (success == false){
 #if defined(PLATFORM_POSIX) || defined(__linux__)
         close(this->fd);
@@ -525,24 +567,6 @@ int Serial::readNBytes(size_t sz){
         this->remainingData.assign(this->data.begin() + sz, this->data.end());
         this->data.erase(this->data.begin() + sz, this->data.end());
     }
-    return 0;
-}
-
-/**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
- *
- * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
- */
-int Serial::readFramedData(){
-    /* pre set */
-
-    /* execute */
-    //this->frameFormat.execute();
-
-    /* post check */
     return 0;
 }
 
