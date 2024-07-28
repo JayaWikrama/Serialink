@@ -581,6 +581,7 @@ int Serial::readNBytes(size_t sz){
 size_t Serial::getBuffer(unsigned char *buffer, size_t maxBufferSz){
     pthread_mutex_lock(&(this->mtx));
     size_t result = (this->data.size() < maxBufferSz ? this->data.size() : maxBufferSz);
+    size_t sz = result;
     for (auto i = this->data.begin(); i != this->data.end(); i++){
         if (result == 0) break;
         *buffer = *i;
@@ -588,7 +589,7 @@ size_t Serial::getBuffer(unsigned char *buffer, size_t maxBufferSz){
         result--;
     }
     pthread_mutex_unlock(&(this->mtx));
-    return result;
+    return sz;
 }
 
 /**
