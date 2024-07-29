@@ -658,6 +658,7 @@ size_t Serial::getBuffer(std::vector <unsigned char> &buffer){
 size_t Serial::getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz){
     pthread_mutex_lock(&(this->mtx));
     size_t result = (this->remainingData.size() < maxBufferSz ? this->remainingData.size() : maxBufferSz);
+    size_t sz = result;
     for (auto i = this->remainingData.begin(); i != this->remainingData.end(); i++){
         if (result == 0) break;
         *buffer = *i;
@@ -665,7 +666,7 @@ size_t Serial::getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz){
         result--;
     }
     pthread_mutex_unlock(&(this->mtx));
-    return result;
+    return sz;
 }
 
 /**
