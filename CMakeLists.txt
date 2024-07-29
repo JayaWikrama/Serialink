@@ -5,11 +5,11 @@ set(PROJECT_VERSION_PATCH "0")
 project(Serialink VERSION 1.1.0 LANGUAGES CXX)
 
 include(FindPkgConfig)
-#include(FetchContent)
-#FetchContent_Declare (
-#  googletest
-#  URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip
-#)
+include(FetchContent)
+FetchContent_Declare (
+  googletest
+  URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip
+)
 
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -43,7 +43,7 @@ endif()
 
 # Find and Check Library
 find_package(PkgConfig REQUIRED)
-#find_package(GTest REQUIRED)
+find_package(GTest REQUIRED)
 
 # Specify the source files
 set(SOURCE_FILES
@@ -71,7 +71,7 @@ add_executable(${PROJECT_NAME} examples/main.cpp)
 add_executable(${PROJECT_NAME}-virtual examples/main-virtual.cpp)
 
 # Create Unit Test executable
-#add_executable(${PROJECT_NAME}-test test/Serialink-test.cpp)
+add_executable(${PROJECT_NAME}-test test/test-simple.cpp)
 
 # Include directories
 target_include_directories(${PROJECT_NAME}-lib PUBLIC
@@ -79,12 +79,9 @@ target_include_directories(${PROJECT_NAME}-lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/DataFrame/include>
   $<INSTALL_INTERFACE:include>
-  ${SQLITE3_INCLUDE_DIRS}
-  ${OPENCV_INCLUDE_DIRS}
-  ${ZBAR_INCLUDE_DIRS}
 )
 
-#include_directories(${PROJECT_NAME}-test PUBLIC ${GTEST_INCLUDE_DIRS})
+include_directories(${PROJECT_NAME}-test PUBLIC ${GTEST_INCLUDE_DIRS})
 
 # Ensure DataFrame is built before the executable
 add_dependencies(${PROJECT_NAME} DataFrame-lib)
@@ -103,9 +100,8 @@ add_definitions(-D__USE_EXE_FUNC)
 add_definitions(-D__USE_POST_FUNC)
 
 # Link Unit Test executable with the library
-#target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib)
-#target_link_libraries(${PROJECT_NAME}-test PUBLIC ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} -lpthread -lopencv_videoio -lopencv_imgproc -lzbar)
-#target_link_libraries(${PROJECT_NAME}-test gtest_main)
+target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
+target_link_libraries(${PROJECT_NAME}-test PUBLIC ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} -lpthread)
 
 # Set compiler and linker flags
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
@@ -115,7 +111,7 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -O3")
 set(CMAKE_USE_RELATIVE_PATHS OFF)
 
 # Add test
-#add_test(NAME example_test COMMAND ${PROJECT_NAME}-test)
+add_test(NAME example_test COMMAND ${PROJECT_NAME}-test)
 
 # Setup for package installer
 install(TARGETS ${PROJECT_NAME}-lib
