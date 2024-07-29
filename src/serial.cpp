@@ -494,7 +494,6 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
                 tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
                 this->remainingData.clear();
             }
-            tmp.insert(tmp.end(), this->data.begin(), this->data.end());
             for (i = idxCheck; i <= tmp.size() - sz; i++){
                 if (memcmp(tmp.data() + i, stopBytes, sz) == 0){
                     found = true;
