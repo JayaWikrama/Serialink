@@ -122,6 +122,7 @@ Serial::Serial(){
 #endif
     this->baud = B9600;
     this->timeout = 10;
+    this->keepAliveMs = 0;
     this->port = "/dev/ttyUSB0";
     pthread_mutex_init(&(this->mtx), NULL);
 }
@@ -143,6 +144,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
 #endif
     this->baud = baud;
     this->timeout = timeout;
+    this->keepAliveMs = 0;
     this->port = port;
     pthread_mutex_init(&(this->mtx), NULL);
 }
