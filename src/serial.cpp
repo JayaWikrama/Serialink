@@ -215,6 +215,46 @@ void Serial::setKeepAlive(unsigned int keepAliveMs){
 }
 
 /**
+ * @brief getter untuk port serial.
+ *
+ * Berfungsi untuk melakukan pengambilan data port serial yang digunakan
+ * @return string port.
+ */
+std::string Serial::getPort(){
+    return this->port;
+}
+
+/**
+ * @brief getter untuk baudrate.
+ *
+ * Berfungsi untuk melakukan pengambilan data baudrate komunikasi serial yang digunakan
+ * @return baudrate.
+ */
+speed_t Serial::getBaudrate(){
+    return this->baud;
+}
+
+/**
+ * @brief getter untuk timeout komunikasi.
+ *
+ * Berfungsi untuk melakukan pengambilan data timeout komunikasi serial
+ * @return timeout per 100ms.
+ */
+unsigned int Serial::getTimeout(){
+    return this->timeout;
+}
+
+/**
+ * @brief getter untuk keep alive komunikasi.
+ *
+ * Berfungsi untuk melakukan pengambilan data maksimal waktu tunggu untuk membaca data serial selanjutnya setelah bytes pertama data serial berhasil diterima
+ * @return timeout per 100ms.
+ */
+unsigned int Serial::getKeepAlive(){
+    return this->keepAliveMs;
+}
+
+/**
  * @brief open port serial.
  *
  * Berfungsi untuk melakukan open port serial komunikasi

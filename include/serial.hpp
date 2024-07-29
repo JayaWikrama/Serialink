@@ -192,6 +192,14 @@ class Serial {
     unsigned int getTimeout();
 
     /**
+     * @brief getter untuk keep alive komunikasi.
+     *
+     * Berfungsi untuk melakukan pengambilan data maksimal waktu tunggu untuk membaca data serial selanjutnya setelah bytes pertama data serial berhasil diterima
+     * @return timeout per 100ms.
+     */
+    unsigned int getKeepAlive();
+
+    /**
      * @brief open port serial.
      *
      * Berfungsi untuk melakukan open port serial komunikasi
