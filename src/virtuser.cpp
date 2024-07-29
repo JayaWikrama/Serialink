@@ -19,6 +19,7 @@ VirtualSerial::VirtualSerial(){
   int masterFd = -1;
   int slaveFd = -1;
   char virtualSerialName[128];
+  this->setPort("");
   if (openpty(&masterFd, &slaveFd, virtualSerialName, NULL, NULL) == -1) {
     std::cerr << "Gagal membuat virtual serial port: " << strerror(errno) << std::endl;
     return;
@@ -48,6 +49,7 @@ VirtualSerial::VirtualSerial(speed_t baud, unsigned int timeout, unsigned int ke
   int masterFd = -1;
   int slaveFd = -1;
   char virtualSerialName[128];
+  this->setPort("");
   if (openpty(&masterFd, &slaveFd, virtualSerialName, NULL, NULL) == -1) {
     std::cerr << "Gagal membuat virtual serial port: " << strerror(errno) << std::endl;
     return;
