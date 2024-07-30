@@ -49,6 +49,7 @@ find_package(GTest REQUIRED)
 set(SOURCE_FILES
     src/serial.cpp
     src/virtuser.cpp
+    src/serialink.cpp
 )
 
 # Create a library from common code
