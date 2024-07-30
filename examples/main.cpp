@@ -1,47 +1,49 @@
 #include <iostream>
 #include <string.h>
 
-#include "serial.hpp"
+#include "serialink.hpp"
+
+void setupLengthByCommand(DataFrame &frame, void *ptr){
+    int data = 0;
+    DataFrame *target = frame.getNext();
+    if (target == nullptr) return;
+    frame.getData((unsigned char *) &data, 1);
+    if (data == 0x35)
+        target->setSize(3);
+    else if (data == 0x36)
+        target->setSize(2);
+}
 
 int main(int argc, char **argv){
     if (argc != 4){
         std::cout << "cmd: " << argv[0] << " <port> <timeout100ms> <keepAliveMs>" << std::endl;
         exit(0);
     }
-    Serial serial(argv[1], B115200, atoi(argv[2]));
-    serial.openPort();
+    int ret = 0;
+    Serialink serial;
+    serial.setPort(argv[1]);
+    serial.setBaudrate(B115200);
+    serial.setTimeout(atoi(argv[2]));
     serial.setKeepAlive(atoi(argv[3]));
-    /* test start bytes */
-    while (serial.readStartBytes((const unsigned char *) "\x31\x32\x33", 3)){
-        std::cout << "timeout!!!" << std::endl;
+    /* Configure Frame Format */
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    cmdBytes.setPostExecuteFunction((const void *) &setupLengthByCommand, nullptr);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    /* Setup Frame Format to serial com */
+    serial = startBytes + cmdBytes + dataBytes + stopBytes;
+    /* Do serial communication */
+    serial.openPort();
+    while ((ret = serial.readFramedData()) != 0){
+        std::cout << "err: " << ret << std::endl;
     }
-    char data[512];
-    memset(data, 0x00, sizeof(data));
-    serial.getBuffer((unsigned char *) data, sizeof(data));
-    std::cout << "Data: " << data << std::endl;
-    memset(data, 0x00, sizeof(data));
-    serial.getRemainingBuffer((unsigned char *) data, sizeof(data));
-    std::cout << "Remaining Data: " << data << std::endl;
-    /* test N Bytes Length */
-    while (serial.readNBytes(24)){
-        std::cout << "timeout!!!" << std::endl;
+    std::vector <unsigned char> data;
+    serial.getFormat()->getAllData(data);
+    std::cout << "Data size = " << data.size() << std::endl;
+    for (auto i = data.begin(); i < data.end(); ++i){
+        std::cout << std::hex << *i;
+        std:: cout << " ";
     }
-    memset(data, 0x00, sizeof(data));
-    serial.getBuffer((unsigned char *) data, sizeof(data));
-    std::cout << "Data: " << data << std::endl;
-    memset(data, 0x00, sizeof(data));
-    serial.getRemainingBuffer((unsigned char *) data, sizeof(data));
-    std::cout << "Remaining Data: " << data << std::endl;
-    /* test Read Until Stop Bytes */
-    while (serial.readUntilStopBytes((const unsigned char *) "\x31\x32\x33\x34", 4)){
-        std::cout << "timeout!!!" << std::endl;
-    }
-    memset(data, 0x00, sizeof(data));
-    serial.getBuffer((unsigned char *) data, sizeof(data));
-    std::cout << "Data: " << data << std::endl;
-    memset(data, 0x00, sizeof(data));
-    serial.getRemainingBuffer((unsigned char *) data, sizeof(data));
-    std::cout << "Remaining Data: " << data << std::endl;
-    serial.closePort();
     return 0;
 }
