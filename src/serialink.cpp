@@ -46,7 +46,7 @@ int Serialink::readFramedData(){
     if (this->frameFormat == nullptr) return 3;
     DataFrame *tmp = this->frameFormat;
     std::vector <unsigned char> vecUC;
-    int ret = 2;
+    int ret = 0;
     void (*callback)(DataFrame &, void *) = nullptr;
     while (tmp != nullptr){
         if (tmp->getExecuteFunction() != nullptr){
@@ -55,11 +55,13 @@ int Serialink::readFramedData(){
         }
         if (tmp->getType() == DataFrame::FRAME_TYPE_START_BYTES && tmp->getReference(vecUC) > 0){
             if (this->readStartBytes(vecUC.data(), vecUC.size())){
+                ret = 2;
                 break;
             }
         }
         else if (tmp->getType() == DataFrame::FRAME_TYPE_STOP_BYTES && tmp->getReference(vecUC) > 0){
-            if (this->readStartBytes(vecUC.data(), vecUC.size())){
+            if (this->readStopBytes(vecUC.data(), vecUC.size())){
+                ret = 2;
                 break;
             }
         }
@@ -74,6 +76,10 @@ int Serialink::readFramedData(){
                 if (this->getBuffer(vecUC) > 0){
                     tmp->setData(vecUC);
                 }
+                else {
+                    ret = 2;
+                    break;
+                }
             }
         }
         if (tmp->getPostExecuteFunction() != nullptr){
@@ -82,7 +88,7 @@ int Serialink::readFramedData(){
         }
         tmp = tmp->getNext();
     }
-    return 0;
+    return ret;
 }
 
 Serialink& Serialink::operator=(const DataFrame &obj){
