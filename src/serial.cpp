@@ -316,13 +316,14 @@ bool Serial::isInputBytesAvailable(){
 /**
  * @brief berfungsi untuk melakukan operasi pembacaan data serial.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * Berfungsi untuk melakukan operasi pembacaan data serial tanpa memisahkan data yang sukses terbaca menjadi data dengan size yang diinginkan dengan data sisa. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
  * @param sz jumlah data yang ingin dibaca. __sz__ = 0 berarti jumlah data yang akan dibaca tidak terbatas (hingga __keepAliveMs__ terpenuhi).
+ * @param dontSplitRemainingData mode untuk melakukan penonaktifkan fungsi pemisahan data secara otomatis berdasarkan jumlah data yang ingin dibaca.
  * @return 0 jika sukses.
  * @return 1 jika port belum terbuka.
  * @return 2 jika timeout.
  */
-int Serial::readData(size_t sz){
+int Serial::readData(size_t sz, bool dontSplitRemainingData){
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     if (this->fd <= 0){
@@ -382,7 +383,7 @@ int Serial::readData(size_t sz){
         pthread_mutex_unlock(&(this->mtx));
         return 2;
     }
-    if (sz > 0 && this->data.size() > sz){
+    if (dontSplitRemainingData == false && sz > 0 && this->data.size() > sz){
         this->remainingData.assign(this->data.begin() + sz, this->data.end());
         this->data.erase(this->data.begin() + sz, this->data.end());
     }
@@ -394,12 +395,25 @@ int Serial::readData(size_t sz){
  * @brief berfungsi untuk melakukan operasi pembacaan data serial.
  *
  * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param sz jumlah data yang ingin dibaca. __sz__ = 0 berarti jumlah data yang akan dibaca tidak terbatas (hingga __keepAliveMs__ terpenuhi).
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readData(size_t sz){
+    return this->readData(sz, false);
+}
+
+/**
+ * @brief berfungsi untuk melakukan operasi pembacaan data serial.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
  * @return 0 jika sukses.
  * @return 1 jika port belum terbuka.
  * @return 2 jika timeout.
  */
 int Serial::readData(){
-    return this->readData(0);
+    return this->readData(0, false);
 }
 
 /**
@@ -426,7 +440,7 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData(sz);
+            ret = this->readData(sz, true);
         }
         if (!ret){
             if (isRcvFirstBytes == false){
@@ -480,7 +494,7 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData(sz);
+            ret = this->readData(sz, true);
         }
         if (!ret){
             if (isRcvFirstBytes == false){
@@ -533,6 +547,7 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
 int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
     bool found = false;
     int ret = 0;
+    std::vector <unsigned char> tmp;
     do {
         if (this->remainingData.size() > 0){
             this->data.assign(this->remainingData.begin(), this->remainingData.end());
@@ -540,13 +555,14 @@ int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData(sz);
+            ret = this->readData(sz, true);
         }
         if (!ret){
-            if (this->data.size() >= sz){
-                if (this->data.size() > sz){
-                    this->remainingData.assign(this->data.begin() + sz, this->data.end());
-                    this->data.erase(this->data.begin() + sz, this->data.end());
+            tmp.insert(tmp.end(), this->data.begin(), this->data.end());
+            if (tmp.size() >= sz){
+                if (tmp.size() > sz){
+                    this->remainingData.assign(tmp.begin() + sz, tmp.end());
+                    this->data.assign(tmp.begin(), tmp.begin() + sz);
                 }
                 if (memcmp(this->data.data(), stopBytes, sz) == 0){
                     return 0;
@@ -580,7 +596,7 @@ int Serial::readNBytes(size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData(sz);
+            ret = this->readData(sz, true);
         }
         if (!ret){
             if (isRcvFirstBytes == false){
