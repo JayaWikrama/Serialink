@@ -545,6 +545,7 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
  * @return 3 jika terdapat data serial yang terbaca tetapi tidak sesuai dengan stop bytes yang diinginkan.
  */
 int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
+    size_t i = 0;
     bool found = false;
     int ret = 0;
     std::vector <unsigned char> tmp;
@@ -555,22 +556,40 @@ int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
             ret = 0;
         }
         else {
-            ret = this->readData(sz, true);
+            ret = this->readData(sz - tmp.size(), true);
         }
         if (!ret){
             tmp.insert(tmp.end(), this->data.begin(), this->data.end());
+            if (this->remainingData.size() > 0){
+                tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
+                this->remainingData.clear();
+            }
             if (tmp.size() >= sz){
-                if (tmp.size() > sz){
-                    this->remainingData.assign(tmp.begin() + sz, tmp.end());
-                    this->data.assign(tmp.begin(), tmp.begin() + sz);
+                if (memcmp(tmp.data(), stopBytes, sz) == 0){
+                    found = true;
                 }
-                if (memcmp(this->data.data(), stopBytes, sz) == 0){
-                    return 0;
-                }
-                return 3;
+                break;
             }
         }
     } while(ret == 0);
+    if (tmp.size() < sz){
+        this->data.assign(tmp.begin(), tmp.end());
+        return 2;
+    }
+    if (found == false){
+        this->data.assign(tmp.begin(), tmp.end());
+        return 3;
+    }
+    if (this->data.size() != tmp.size()){
+        this->data.clear();
+        this->data.assign(tmp.begin(), tmp.begin() + sz);
+        if (tmp.size() > sz) this->remainingData.assign(tmp.begin() + sz, tmp.end());
+        return 0;
+    }
+    if (this->data.size() > sz){
+        this->remainingData.assign(this->data.begin() + sz, this->data.end());
+        this->data.erase(this->data.begin() + sz, this->data.end());
+    }
     return ret;
 }
 
