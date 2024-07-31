@@ -454,10 +454,12 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
                 tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
                 this->remainingData.clear();
             }
-            for (i = idxCheck; i <= tmp.size() - sz; i++){
-                if (memcmp(tmp.data() + i, startBytes, sz) == 0){
-                    found = true;
-                    break;
+            if (tmp.size() >= sz){
+                for (i = idxCheck; i <= tmp.size() - sz; i++){
+                    if (memcmp(tmp.data() + i, startBytes, sz) == 0){
+                        found = true;
+                        break;
+                    }
                 }
             }
         }
@@ -508,10 +510,12 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
                 tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
                 this->remainingData.clear();
             }
-            for (i = idxCheck; i <= tmp.size() - sz; i++){
-                if (memcmp(tmp.data() + i, stopBytes, sz) == 0){
-                    found = true;
-                    break;
+            if (tmp.size() >= sz){
+                for (i = idxCheck; i <= tmp.size() - sz; i++){
+                    if (memcmp(tmp.data() + i, stopBytes, sz) == 0){
+                        found = true;
+                        break;
+                    }
                 }
             }
         }
@@ -545,7 +549,6 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
  * @return 3 jika terdapat data serial yang terbaca tetapi tidak sesuai dengan stop bytes yang diinginkan.
  */
 int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
-    size_t i = 0;
     bool found = false;
     int ret = 0;
     std::vector <unsigned char> tmp;
