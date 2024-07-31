@@ -304,7 +304,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes) {
 }
 
 TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes) {
-    unsigned char buffer[8];
+    unsigned char buffer[32];
     pthread_t thread;
     std::vector <unsigned char> tmp;
     struct timeval tvStart, tvEnd;
@@ -326,7 +326,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
-    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 8);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 12);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
 
@@ -443,7 +443,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_no_input_bytes_available) {
 }
 
 TEST_F(SerialinkSimpleTest, negativeWriteAndRead_stopBytes) {
-    unsigned char buffer[8];
+    unsigned char buffer[32];
     pthread_t thread;
     std::vector <unsigned char> tmp;
     struct timeval tvStart, tvEnd;
@@ -460,11 +460,12 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_stopBytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
-    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 16);
     ASSERT_NE(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
-    ASSERT_EQ(slave.getBuffer(tmp), 4);
-    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(slave.getBuffer(tmp), 16);
+    ASSERT_EQ(tmp.size(), 16);
     ASSERT_NE(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
 int main(int argc, char** argv) {
