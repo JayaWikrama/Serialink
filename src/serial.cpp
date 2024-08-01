@@ -750,6 +750,45 @@ int Serial::writeData(const unsigned char *buffer, size_t sz){
 }
 
 /**
+ * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ *
+ * Berfungsi untuk melakukan operasi penulisan data serial.
+ * @param buffer data yang ingin ditulis.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika gagal melakukan penulisan data.
+ */
+int Serial::writeData(const char *buffer){
+    return this->writeData((const unsigned char *) buffer, strlen(buffer));
+}
+
+/**
+ * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ *
+ * Berfungsi untuk melakukan operasi penulisan data serial.
+ * @param buffer data yang ingin ditulis.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika gagal melakukan penulisan data.
+ */
+int Serial::writeData(const std::vector <unsigned char> buffer){
+    return this->writeData(buffer.data(), buffer.size());
+}
+
+/**
+ * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ *
+ * Berfungsi untuk melakukan operasi penulisan data serial.
+ * @param buffer data yang ingin ditulis.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika gagal melakukan penulisan data.
+ */
+int Serial::writeData(const std::string buffer){
+    return this->writeData((const unsigned char *) buffer.c_str(), buffer.length());
+}
+
+/**
  * @brief menutup port serial komunikasi.
  *
  * Berfungsi untuk melakukan penutupan port serial komunikasi
