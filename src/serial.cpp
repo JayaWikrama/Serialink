@@ -150,6 +150,28 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
 }
 
 /**
+ * @brief Custom constructor.
+ *
+ * Berfungsi untuk melakukan setup private data dan parameter ke nilai default (kecuali untuk port, baud, timeout, dan keepAliveMs). Diantaranya:
+ * fd = -1
+ * Initialize mutex
+ * @param port port device serial.
+ * @param baud baudrate.
+ * @param timeout timeout per 100ms.
+ * @param keepAliveMs waktu dalam milliseconds.
+ */
+Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs){
+    #if defined(PLATFORM_POSIX) || defined(__linux__)
+    this->fd = -1;
+#endif
+    this->baud = baud;
+    this->timeout = timeout;
+    this->keepAliveMs = keepAliveMs;
+    this->port = port;
+    pthread_mutex_init(&(this->mtx), NULL);
+}
+
+/**
  * @brief Destructor.
  *
  * Berfungsi untuk melakukan release setiap memory yang dialokasikan.
