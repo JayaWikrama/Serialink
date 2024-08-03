@@ -105,6 +105,20 @@ TEST_F(SerialinkSimpleTest, CustomConstructor_2) {
     ASSERT_EQ(master.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
+TEST_F(SerialinkSimpleTest, CustomConstructor_3) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    Serial custom("/dev/myPORT0", B115200, 25, 12345);
+    ASSERT_EQ(custom.getPort(), std::string("/dev/myPORT0"));
+    ASSERT_EQ(custom.getBaudrate(), B115200);
+    ASSERT_EQ(custom.getTimeout(), 25);
+    ASSERT_EQ(custom.getKeepAlive(), 12345);
+    ASSERT_EQ(custom.getBuffer(buffer, sizeof(buffer)), 0);
+    ASSERT_EQ(custom.getBuffer(tmp), 0);
+    ASSERT_EQ(tmp.size(), 0);
+    ASSERT_EQ(custom.getRemainingBuffer(buffer, sizeof(buffer)), 0);
+}
+
 /* Setter and Getter */
 TEST_F(SerialinkSimpleTest, SetterGetter_1) {
     unsigned char buffer[8];
