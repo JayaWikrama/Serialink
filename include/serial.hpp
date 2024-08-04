@@ -278,6 +278,39 @@ class Serial {
     int readStartBytes(const unsigned char *startBytes, size_t sz);
 
     /**
+     * @brief function overloading untuk __readStartBytes__ dengan input menggunakan const char *.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param startBytes data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readStartBytes(const char *startBytes);
+
+    /**
+     * @brief function overloading untuk __readStartBytes__ dengan input menggunakan vector.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param startBytes data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readStartBytes(std::vector <unsigned char> startBytes);
+
+    /**
+     * @brief function overloading untuk __readStartBytes__ dengan input menggunakan string.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param startBytes data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readStartBytes(std::string startBytes);
+
+    /**
      * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan.
      *
      * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
