@@ -267,6 +267,90 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes) {
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
 
+TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov1) {
+    unsigned char buffer[8];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData((const unsigned char *) "qwerty1234567890", 16), 0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readStartBytes("1234"), 0);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 4);
+    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
+}
+
+TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov2) {
+    const char *data = "1234";
+    unsigned char buffer[8];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData((const unsigned char *) "qwerty1234567890", 16), 0);
+    ASSERT_EQ(master.begin(), true);
+    tmp.assign((const unsigned char *) data, (const unsigned char *) data + strlen(data));
+    ASSERT_EQ(slave.readStartBytes(tmp), 0);
+    tmp.clear();
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 4);
+    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
+}
+
+TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov3) {
+    unsigned char buffer[8];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData((const unsigned char *) "qwerty1234567890", 16), 0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readStartBytes(std::string("1234")), 0);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 4);
+    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
+}
+
 TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes) {
     unsigned char buffer[512];
     pthread_t thread;
