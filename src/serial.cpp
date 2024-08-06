@@ -516,7 +516,7 @@ int Serial::readStartBytes(const char *startBytes){
  * @return 1 jika port belum terbuka.
  * @return 2 jika timeout.
  */
-int Serial::readStartBytes(std::vector <unsigned char> startBytes){
+int Serial::readStartBytes(const std::vector <unsigned char> startBytes){
     return this->readStartBytes(startBytes.data(), startBytes.size());
 }
 
@@ -529,7 +529,7 @@ int Serial::readStartBytes(std::vector <unsigned char> startBytes){
  * @return 1 jika port belum terbuka.
  * @return 2 jika timeout.
  */
-int Serial::readStartBytes(std::string startBytes){
+int Serial::readStartBytes(const std::string startBytes){
     return this->readStartBytes((const unsigned char *) startBytes.c_str(), startBytes.length());
 }
 
@@ -596,6 +596,45 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
         this->data.erase(this->data.begin() + i + sz, this->data.end());
     }
     return ret;
+}
+
+/**
+ * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan const char *.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param stopBytes data start bytes yang ingin ditemukan.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readUntilStopBytes(const char *stopBytes){
+    return this->readUntilStopBytes((const unsigned char *) stopBytes, strlen(stopBytes));
+}
+
+/**
+ * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan vector.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param stopBytes data start bytes yang ingin ditemukan.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readUntilStopBytes(const std::vector <unsigned char> stopBytes){
+    return this->readUntilStopBytes(stopBytes.data(), stopBytes.size());
+}
+
+/**
+ * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan string.
+ *
+ * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+ * @param stopBytes data start bytes yang ingin ditemukan.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ */
+int Serial::readUntilStopBytes(const std::string stopBytes){
+    return this->readUntilStopBytes((const unsigned char *) stopBytes.c_str(), stopBytes.length());
 }
 
 /**

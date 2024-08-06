@@ -297,7 +297,7 @@ class Serial {
      * @return 1 jika port belum terbuka.
      * @return 2 jika timeout.
      */
-    int readStartBytes(std::vector <unsigned char> startBytes);
+    int readStartBytes(const std::vector <unsigned char> startBytes);
 
     /**
      * @brief function overloading untuk __readStartBytes__ dengan input menggunakan string.
@@ -308,7 +308,7 @@ class Serial {
      * @return 1 jika port belum terbuka.
      * @return 2 jika timeout.
      */
-    int readStartBytes(std::string startBytes);
+    int readStartBytes(const std::string startBytes);
 
     /**
      * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan.
@@ -321,6 +321,39 @@ class Serial {
      * @return 2 jika timeout.
      */
     int readUntilStopBytes(const unsigned char *stopBytes, size_t sz);
+
+    /**
+     * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan const char *.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param stopBytes data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readUntilStopBytes(const char *stopBytes);
+
+    /**
+     * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan vector.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param stopBytes data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readUntilStopBytes(const std::vector <unsigned char> stopBytes);
+
+    /**
+     * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan string.
+     *
+     * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
+     * @param stopBytes data start bytes yang ingin ditemukan.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     */
+    int readUntilStopBytes(const std::string stopBytes);
 
     /**
      * @brief berfungsi untuk melakukan operasi pembacaan data serial sekaligus pengecekan apakah data tersebut adalah stop bytes yang diinginkan.
