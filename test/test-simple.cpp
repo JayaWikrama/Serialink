@@ -401,6 +401,159 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes) {
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
 }
 
+TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov1) {
+    unsigned char buffer[512];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData(
+      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n",
+      462
+     ),
+     0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readUntilStopBytes("1234"), 0);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
+    ASSERT_EQ(memcmp(buffer,
+                     (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
+                     385),
+                    0);
+    ASSERT_EQ(slave.getBuffer(tmp), 385);
+    ASSERT_EQ(tmp.size(), 385);
+    ASSERT_EQ(memcmp(tmp.data(),
+                     (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
+                     385),
+                    0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
+}
+
+TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov2) {
+    const char *data = "1234";
+    unsigned char buffer[512];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData(
+      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n",
+      462
+     ),
+     0);
+    ASSERT_EQ(master.begin(), true);
+    tmp.assign((const unsigned char *) data, (const unsigned char *) data + strlen(data));
+    ASSERT_EQ(slave.readUntilStopBytes(tmp), 0);
+    tmp.clear();
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
+    ASSERT_EQ(memcmp(buffer,
+                     (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
+                     385),
+                    0);
+    ASSERT_EQ(slave.getBuffer(tmp), 385);
+    ASSERT_EQ(tmp.size(), 385);
+    ASSERT_EQ(memcmp(tmp.data(),
+                     (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
+                     385),
+                    0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
+}
+
+TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov3) {
+    unsigned char buffer[512];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData(
+      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234"
+                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n",
+      462
+     ),
+     0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readUntilStopBytes(std::string("1234")), 0);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
+    ASSERT_EQ(memcmp(buffer,
+                     (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
+                     385),
+                    0);
+    ASSERT_EQ(slave.getBuffer(tmp), 385);
+    ASSERT_EQ(tmp.size(), 385);
+    ASSERT_EQ(memcmp(tmp.data(),
+                     (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
+                                             "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
+                     385),
+                    0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
+}
+
 TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes) {
     unsigned char buffer[32];
     pthread_t thread;
