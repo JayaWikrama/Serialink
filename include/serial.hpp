@@ -416,6 +416,14 @@ class Serial {
     int readNBytes(size_t sz);
 
     /**
+     * @brief berfungsi untuk melakukan pengambilan jumlah data yang berhasil terbaca.
+     *
+     * Berfungsi untuk mengambil informasi nilai jumlah data yang berhasil terbaca.
+     * @return ukuran atau size data serial dalam bytes.
+     */
+    size_t getDataSize();
+
+    /**
      * @brief berfungsi untuk melakukan pengambilan data buffer read.
      *
      * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
