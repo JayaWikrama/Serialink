@@ -131,6 +131,7 @@ TEST_F(SerialinkSimpleTest, SetterGetter_1) {
     ASSERT_EQ(slave.getBaudrate(), B19200);
     ASSERT_EQ(slave.getTimeout(), 25);
     ASSERT_EQ(slave.getKeepAlive(), 250);
+    ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
@@ -155,6 +156,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_unknown_n_bytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 1000 && diffTime <= 1075, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "\r\n\r\n", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -180,6 +182,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_known_n_bytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "\r\n\r\n", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -205,6 +208,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_known_n_bytes_with_remaining_data
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "\r\n\r\n", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -232,6 +236,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_with_delayed_bytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 120 && diffTime <= 220, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "\r\n\r\n", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -258,6 +263,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -285,6 +291,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov1) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -315,6 +322,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov2) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -342,6 +350,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov3) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -378,6 +387,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 385);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
     ASSERT_EQ(memcmp(buffer,
                      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
@@ -428,6 +438,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov1) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 385);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
     ASSERT_EQ(memcmp(buffer,
                      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
@@ -481,6 +492,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov2) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 385);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
     ASSERT_EQ(memcmp(buffer,
                      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
@@ -531,6 +543,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov3) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 385);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
     ASSERT_EQ(memcmp(buffer,
                      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
@@ -572,6 +585,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -599,6 +613,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes_ov1) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -629,6 +644,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes_ov2) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -656,6 +672,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes_ov3) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 4);
@@ -692,6 +709,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_nBytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 385);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 385);
     ASSERT_EQ(memcmp(buffer,
                      (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz    \n"
@@ -730,6 +748,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_port_not_open) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 10, true);
+    ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
@@ -751,6 +770,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_invalid_port) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 10, true);
+    ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
@@ -772,6 +792,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_no_input_bytes_available) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 2500 && diffTime <= 2750, true);
+    ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
@@ -795,6 +816,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_stopBytes) {
     gettimeofday(&tvEnd, NULL);
     diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
     ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 16);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 16);
     ASSERT_NE(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 16);
