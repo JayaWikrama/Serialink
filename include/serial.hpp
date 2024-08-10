@@ -443,6 +443,14 @@ class Serial {
     size_t getBuffer(std::vector <unsigned char> &buffer);
 
     /**
+     * @brief berfungsi untuk melakukan pengambilan jumlah data yang terdapat pada remaining buffer.
+     *
+     * Berfungsi untuk mengambil informasi nilai jumlah data yang terdapat pada remaining buffer.
+     * @return ukuran atau size data serial dalam bytes.
+     */
+    size_t getRemainingDataSize();
+
+    /**
      * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer.
      *
      * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.
