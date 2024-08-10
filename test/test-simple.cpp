@@ -74,6 +74,7 @@ TEST_F(SerialinkSimpleTest, DefaultConstructor_1) {
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -88,6 +89,7 @@ TEST_F(SerialinkSimpleTest, CustomConstructor_1) {
     ASSERT_EQ(custom.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(custom.getBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
+    ASSERT_EQ(custom.getRemainingDataSize(), 0);
     ASSERT_EQ(custom.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -102,6 +104,7 @@ TEST_F(SerialinkSimpleTest, CustomConstructor_2) {
     ASSERT_EQ(master.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(master.getBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
+    ASSERT_EQ(master.getRemainingDataSize(), 0);
     ASSERT_EQ(master.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -116,6 +119,7 @@ TEST_F(SerialinkSimpleTest, CustomConstructor_3) {
     ASSERT_EQ(custom.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(custom.getBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
+    ASSERT_EQ(custom.getRemainingDataSize(), 0);
     ASSERT_EQ(custom.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -135,6 +139,7 @@ TEST_F(SerialinkSimpleTest, SetterGetter_1) {
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -162,6 +167,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_unknown_n_bytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "\r\n\r\n", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -188,6 +194,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_known_n_bytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "\r\n\r\n", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -214,6 +221,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_known_n_bytes_with_remaining_data
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "\r\n\r\n", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 3);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 3);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "abc", 3), 0);
 }
@@ -242,6 +250,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_with_delayed_bytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "\r\n\r\n", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -269,6 +278,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 6);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -297,6 +307,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov1) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 6);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -328,6 +339,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov2) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 6);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -356,6 +368,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_startBytes_ov3) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 6);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 6);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -407,6 +420,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes) {
                                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
                      385),
                     0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 77);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
 }
@@ -458,6 +472,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov1) {
                                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
                      385),
                     0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 77);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
 }
@@ -512,6 +527,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov2) {
                                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
                      385),
                     0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 77);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
 }
@@ -563,6 +579,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_untilStopBytes_ov3) {
                                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
                      385),
                     0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 77);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
 }
@@ -591,6 +608,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 12);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 12);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -619,6 +637,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes_ov1) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 12);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 12);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -650,6 +669,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes_ov2) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 12);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 12);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -678,6 +698,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_stopBytes_ov3) {
     ASSERT_EQ(slave.getBuffer(tmp), 4);
     ASSERT_EQ(tmp.size(), 4);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 12);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 12);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890", 6), 0);
 }
@@ -729,6 +750,7 @@ TEST_F(SerialinkSimpleTest, normalWriteAndRead_nBytes) {
                                              "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz-1234",
                      385),
                     0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 77);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 77);
     ASSERT_EQ(memcmp(buffer, (const unsigned char *) "qwertyuiopasdfghjklzxcvbnm09876543210987654321poiuytrewqlkjhgfdsamnbvcxz1234\n", 77), 0);
 }
@@ -751,6 +773,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_port_not_open) {
     ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -773,6 +796,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_invalid_port) {
     ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -795,6 +819,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_no_input_bytes_available) {
     ASSERT_EQ(slave.getDataSize(), 0);
     ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getBuffer(tmp), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
@@ -822,6 +847,7 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_stopBytes) {
     ASSERT_EQ(slave.getBuffer(tmp), 16);
     ASSERT_EQ(tmp.size(), 16);
     ASSERT_NE(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
 }
 
