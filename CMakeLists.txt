@@ -72,7 +72,7 @@ add_executable(${PROJECT_NAME} examples/main.cpp)
 add_executable(${PROJECT_NAME}-virtual examples/main-virtual.cpp)
 
 # Create Unit Test executable
-add_executable(${PROJECT_NAME}-test test/test-simple.cpp)
+add_executable(${PROJECT_NAME}-test test/test-simple.cpp test/test-framed-data.cpp)
 
 # Include directories
 target_include_directories(${PROJECT_NAME}-lib PUBLIC
