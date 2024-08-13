@@ -109,7 +109,8 @@ Serialink& Serialink::operator=(const DataFrame &obj){
       ncObj.getPostExecuteFunctionParam()
     );
     if (this->frameFormat != nullptr){
-        *(this->frameFormat) += *(ncObj.getNext());
+        if (ncObj.getNext() != nullptr)
+            *(this->frameFormat) += *(ncObj.getNext());
     }
     return *this;
 }
