@@ -62,3 +62,22 @@ TEST_F(SerialinkFramedDataTest, OperatorOverloading_1) {
               "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
               "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
 }
+
+TEST_F(SerialinkFramedDataTest, OperatorOverloading_2) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    cmdBytes.setPostExecuteFunction((const void *) &callbackEcho, nullptr);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes;
+    slave += cmdBytes;
+    slave += dataBytes;
+    slave += stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:" + std::to_string((unsigned long) &callbackEcho) + ">>\n"
+              "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+}
