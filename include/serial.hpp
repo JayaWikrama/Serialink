@@ -63,11 +63,11 @@ class Serial {
     speed_t baud;
     unsigned int timeout;
     unsigned int keepAliveMs;
-    std::vector <unsigned char> data;
-    std::vector <unsigned char> remainingData;
     std::string port;
     pthread_mutex_t mtx;
   protected:
+    std::vector <unsigned char> data;
+    std::vector <unsigned char> remainingData;
     /**
      * @brief setter untuk file descriptor.
      *

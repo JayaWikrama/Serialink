@@ -88,6 +88,9 @@ int Serialink::readFramedData(){
         }
         tmp = tmp->getNext();
     }
+    if (ret == 0){
+        this->frameFormat->getAllData(this->data);
+    }
     return ret;
 }
 
