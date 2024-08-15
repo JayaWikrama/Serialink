@@ -94,6 +94,23 @@ int Serialink::readFramedData(){
     return ret;
 }
 
+/**
+ * @brief berfungsi untuk melakukan operasi penulisan data serial dengan format frame khusus.
+ *
+ * Berfungsi untuk melakukan operasi penulisan data serial dengan format frame khusus.
+ * @return 0 jika sukses.
+ * @return 1 jika port belum terbuka.
+ * @return 2 jika timeout.
+ * @return 3 jika tidak ada data yang akan ditulis.
+ */
+int Serialink::writeFramedData(){
+    std::vector <unsigned char> buffer;
+    if (this->frameFormat->getAllData(buffer) > 0){
+        return this->writeData(buffer);
+    }
+    return 3;
+}
+
 Serialink& Serialink::operator=(const DataFrame &obj){
     if (this->frameFormat != nullptr){
         delete this->frameFormat;

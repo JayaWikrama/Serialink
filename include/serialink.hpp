@@ -40,6 +40,17 @@ class Serialink : public Serial {
      */
     int readFramedData();
 
+    /**
+     * @brief berfungsi untuk melakukan operasi penulisan data serial dengan format frame khusus.
+     *
+     * Berfungsi untuk melakukan operasi penulisan data serial dengan format frame khusus.
+     * @return 0 jika sukses.
+     * @return 1 jika port belum terbuka.
+     * @return 2 jika timeout.
+     * @return 3 jika tidak ada data yang akan ditulis.
+     */
+    int writeFramedData();
+
     Serialink& operator=(const DataFrame &obj);
 
     Serialink& operator+=(const DataFrame &obj);
