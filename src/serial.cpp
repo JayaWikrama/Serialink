@@ -491,6 +491,9 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
         this->data.assign(tmp.begin() + i, tmp.begin() + i + sz);
         if (tmp.size() > i + sz) this->remainingData.assign(tmp.begin() + i + sz, tmp.end());
     }
+    else {
+        this->data.assign(tmp.begin(), tmp.end());
+    }
     return ret;
 }
 
