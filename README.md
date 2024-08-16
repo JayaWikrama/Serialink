@@ -167,7 +167,7 @@ nano src/main.cpp
 
 Berikut source code aplikasinya.
 
-```bash
+```cpp
 #include <iostream>
 #include <string.h>
 
