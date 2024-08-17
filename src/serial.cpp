@@ -771,6 +771,10 @@ int Serial::readNBytes(size_t sz){
                 isRcvFirstBytes = true;
             }
             tmp.insert(tmp.end(), this->data.begin(), this->data.end());
+            if (this->remainingData.size() > 0){
+                tmp.insert(tmp.end(), this->remainingData.begin(), this->remainingData.end());
+                this->remainingData.clear();
+            }
             if (tmp.size() >= sz) break;
         }
         else if (isRcvFirstBytes == true) {
