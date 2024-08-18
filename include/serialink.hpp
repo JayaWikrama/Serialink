@@ -37,6 +37,8 @@ class Serialink : public Serial {
      * @return 0 jika sukses.
      * @return 1 jika port belum terbuka.
      * @return 2 jika timeout.
+     * @return 3 jika frame format belum di setup.
+     * @return 4 jika terdapat format frame data yang tidak valid.
      */
     int readFramedData();
 

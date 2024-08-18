@@ -41,6 +41,7 @@ DataFrame *Serialink::getFormat(){
  * @return 1 jika port belum terbuka.
  * @return 2 jika timeout.
  * @return 3 jika frame format belum di setup.
+ * @return 4 jika terdapat format frame data yang tidak valid.
  */
 int Serialink::readFramedData(){
     if (this->frameFormat == nullptr) return 3;
@@ -105,16 +106,40 @@ int Serialink::readFramedData(){
                         break;
                     }
                 }
+                else {
+                    ret = 4;
+                    break;
+                }
             }
+            else {
+                ret = 4;
+                break;
+            }
+        }
+        else {
+            ret = 4;
+            break;
         }
         if (tmp->getPostExecuteFunction() != nullptr){
             callback = (void (*)(DataFrame &, void *))tmp->getPostExecuteFunction();
             callback(*tmp, tmp->getPostExecuteFunctionParam());
         }
         tmp = tmp->getNext();
+        this->data.clear();
     }
     if (ret == 0){
         this->frameFormat->getAllData(this->data);
+    }
+    else if (tmp != nullptr){
+        DataFrame *fail = tmp;
+        std::vector <unsigned char> dataFail;
+        tmp = this->frameFormat;
+        while (tmp != fail && tmp != nullptr){
+            tmp->getData(vecUC);
+            if (vecUC.size() > 0) dataFail.insert(dataFail.end(), vecUC.begin(), vecUC.end());
+	    tmp = tmp->getNext();
+        }
+        if (dataFail.size() > 0) this->data.insert(this->data.begin(), dataFail.begin(), dataFail.end());
     }
     return ret;
 }
