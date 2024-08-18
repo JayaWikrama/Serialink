@@ -456,3 +456,86 @@ TEST_F(SerialinkFramedDataTest, ReadTest_withUnknownDataSz_2) {
     ASSERT_EQ(slave.getRemainingBuffer(tmp), 0);
     ASSERT_EQ(tmp.size(), 0);
 }
+
+TEST_F(SerialinkFramedDataTest, ReadNegativeTest_1) {
+    unsigned char buffer[16];
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    std::vector <unsigned char> tmp;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(1000);
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes + dataBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData("1234567890-="), 0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readFramedData(), 4);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 4);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 4);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 4);
+    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "1234", 4), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 8);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 8);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "567890-=", 8), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(tmp), 8);
+    ASSERT_EQ(tmp.size(), 8);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "567890-=", 8), 0);
+}
+
+TEST_F(SerialinkFramedDataTest, ReadNegativeTest_2) {
+    unsigned char buffer[16];
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    std::vector <unsigned char> tmp;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(1000);
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA, 3);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES);
+    slave = startBytes + cmdBytes + dataBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:3]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n");
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData("1234567890-="), 0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readFramedData(), 4);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 8);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 8);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "12345678", 8), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 8);
+    ASSERT_EQ(tmp.size(), 8);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "12345678", 8), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 4);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 4);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "90-=", 4), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(tmp), 4);
+    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "90-=", 4), 0);
+}
+
