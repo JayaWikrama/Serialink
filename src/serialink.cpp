@@ -65,20 +65,45 @@ int Serialink::readFramedData(){
                 break;
             }
         }
-        else if ((tmp->getType() == DataFrame::FRAME_TYPE_CONTENT_LENGTH ||
-                  tmp->getType() == DataFrame::FRAME_TYPE_DATA ||
-                  tmp->getType() == DataFrame::FRAME_TYPE_VALIDATOR ||
-                  tmp->getType() == DataFrame::FRAME_TYPE_COMMAND
-                 ) &&
-                 tmp->getSize() > 0
+        else if (tmp->getType() == DataFrame::FRAME_TYPE_CONTENT_LENGTH ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_VALIDATOR ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_COMMAND
         ){
-            if (this->readNBytes(tmp->getSize()) == 0){
-                if (this->getBuffer(vecUC) > 0){
-                    tmp->setData(vecUC);
+            if (tmp->getSize() > 0){
+                if (this->readNBytes(tmp->getSize()) == 0){
+                    if (this->getBuffer(vecUC) > 0){
+                        tmp->setData(vecUC);
+                    }
+                    else {
+                        ret = 2;
+                        break;
+                    }
                 }
-                else {
-                    ret = 2;
-                    break;
+            }
+            else if (tmp->getNext() != nullptr) {
+                if (tmp->getNext()->getType() == DataFrame::FRAME_TYPE_STOP_BYTES &&
+                    tmp->getNext()->getReference(vecUC) > 0
+		){
+                    if (this->readUntilStopBytes(vecUC.data(), vecUC.size()) == 0){
+                        if (this->getBuffer(vecUC) > 0){
+                            size_t sz = vecUC.size() - tmp->getNext()->getSize();
+                            tmp->setData(vecUC.data(), sz);
+                            if (tmp->getPostExecuteFunction() != nullptr){
+                                callback = (void (*)(DataFrame &, void *))tmp->getPostExecuteFunction();
+                                callback(*tmp, tmp->getPostExecuteFunctionParam());
+                            }
+                            tmp = tmp->getNext();
+                            if (tmp->getExecuteFunction() != nullptr){
+                                callback = (void (*)(DataFrame &, void *))tmp->getExecuteFunction();
+                                callback(*tmp, tmp->getExecuteFunctionParam());
+                            }
+                        }
+                    }
+                    else {
+                        ret = 2;
+                        break;
+                    }
                 }
             }
         }
