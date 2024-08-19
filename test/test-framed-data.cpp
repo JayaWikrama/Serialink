@@ -93,6 +93,126 @@ TEST_F(SerialinkFramedDataTest, OperatorOverloading_2) {
               "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
 }
 
+TEST_F(SerialinkFramedDataTest, OperatorOverloading_3) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    cmdBytes.setPostExecuteFunction((const void *) &callbackEcho, nullptr);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes + dataBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:" + std::to_string((unsigned long) &callbackEcho) + ">>\n"
+              "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    DataFrame *frame = nullptr;
+    frame = slave[0];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_START_BYTES);
+    frame = slave[1];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_COMMAND);
+    frame = slave[2];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_DATA);
+    frame = slave[3];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_STOP_BYTES);
+    frame = slave[4];
+    ASSERT_EQ(frame, nullptr);
+}
+
+TEST_F(SerialinkFramedDataTest, OperatorOverloading_4) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    cmdBytes.setPostExecuteFunction((const void *) &callbackEcho, nullptr);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes + dataBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:" + std::to_string((unsigned long) &callbackEcho) + ">>\n"
+              "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    DataFrame *frame = nullptr;
+    frame = slave[DataFrame::FRAME_TYPE_START_BYTES];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getSize(), 4);
+    frame = slave[DataFrame::FRAME_TYPE_COMMAND];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getSize(), 1);
+    frame = slave[DataFrame::FRAME_TYPE_DATA];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getSize(), 0);
+    frame = slave[DataFrame::FRAME_TYPE_STOP_BYTES];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getSize(), 4);
+    frame = slave[DataFrame::FRAME_TYPE_VALIDATOR];
+    ASSERT_EQ(frame, nullptr);
+}
+
+TEST_F(SerialinkFramedDataTest, OperatorOverloading_5) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes0(DataFrame::FRAME_TYPE_COMMAND, 1);
+    DataFrame dataBytes0(DataFrame::FRAME_TYPE_DATA, 1);
+    DataFrame cmdBytes1(DataFrame::FRAME_TYPE_COMMAND, 2);
+    DataFrame dataBytes1(DataFrame::FRAME_TYPE_DATA, 2);
+    DataFrame cmdBytes2(DataFrame::FRAME_TYPE_COMMAND, 3);
+    DataFrame dataBytes2(DataFrame::FRAME_TYPE_DATA, 3);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes0 + dataBytes0 + cmdBytes1 + dataBytes1 + cmdBytes2 + dataBytes2 + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:1]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:2]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:2]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:3]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:3]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    DataFrame *frame = nullptr;
+    frame = slave[{DataFrame::FRAME_TYPE_START_BYTES, 0}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_START_BYTES);
+    ASSERT_EQ(frame->getSize(), 4);
+    frame = slave[{DataFrame::FRAME_TYPE_COMMAND, 0}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_COMMAND);
+    ASSERT_EQ(frame->getSize(), 1);
+    frame = slave[{DataFrame::FRAME_TYPE_DATA, 0}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_DATA);
+    ASSERT_EQ(frame->getSize(), 1);
+    frame = slave[{DataFrame::FRAME_TYPE_COMMAND, 1}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_COMMAND);
+    ASSERT_EQ(frame->getSize(), 2);
+    frame = slave[{DataFrame::FRAME_TYPE_DATA, 1}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_DATA);
+    ASSERT_EQ(frame->getSize(), 2);
+    frame = slave[{DataFrame::FRAME_TYPE_COMMAND, 2}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_COMMAND);
+    ASSERT_EQ(frame->getSize(), 3);
+    frame = slave[{DataFrame::FRAME_TYPE_DATA, 2}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_DATA);
+    ASSERT_EQ(frame->getSize(), 3);
+    frame = slave[{DataFrame::FRAME_TYPE_STOP_BYTES}];
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->getType(), DataFrame::FRAME_TYPE_STOP_BYTES);
+    ASSERT_EQ(frame->getSize(), 4);
+    frame = slave[{DataFrame::FRAME_TYPE_VALIDATOR}];
+    ASSERT_EQ(frame, nullptr);
+}
+
 /* Read Test */
 
 TEST_F(SerialinkFramedDataTest, WriteTest_1) {
