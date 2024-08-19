@@ -14,12 +14,15 @@ extern void *callbackEchoWithDelay(void *ptr);
 void setupLengthByCommand(DataFrame &frame, void *ptr){
     int data = 0;
     DataFrame *target = frame.getNext();
+    Serialink *obj = (Serialink *) ptr;
     if (target == nullptr) return;
     frame.getData((unsigned char *) &data, 1);
     if (data == 0x35)
         target->setSize(3);
     else if (data == 0x36)
         target->setSize(2);
+    else
+        obj->trigInvDataIndicator();
 }
 
 class SerialinkFramedDataTest:public::testing::Test {
@@ -659,3 +662,44 @@ TEST_F(SerialinkFramedDataTest, ReadNegativeTest_2) {
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "90-=", 4), 0);
 }
 
+TEST_F(SerialinkFramedDataTest, ReadTestNegative_InvalidTrigger_1) {
+    unsigned char buffer[16];
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    std::vector <unsigned char> tmp;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(1000);
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    cmdBytes.setPostExecuteFunction((const void *) &setupLengthByCommand, (void *) &slave);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes + dataBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:" + std::to_string((unsigned long) &setupLengthByCommand) + ">>\n"
+              "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData("1234467890-="), 0);
+    ASSERT_EQ(master.begin(), true);
+    ASSERT_EQ(slave.readFramedData(), 4);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 5);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 5);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "12344", 5), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 5);
+    ASSERT_EQ(tmp.size(), 5);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "12344", 5), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 7);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 7);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "67890-=", 7), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(tmp), 7);
+    ASSERT_EQ(tmp.size(), 7);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "67890-=", 7), 0);
+}
