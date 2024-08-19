@@ -194,3 +194,40 @@ Serialink& Serialink::operator+(const DataFrame &obj){
     *this += obj;
     return *this;
 }
+
+DataFrame* Serialink::operator[](int idx){
+    int i = 0;
+    DataFrame *tmp = this->frameFormat;
+    if (tmp == nullptr || i < 0) return nullptr;
+    while(tmp != nullptr){
+        if(i == idx) return tmp;
+        i++;
+        tmp = tmp->getNext();
+    }
+    return nullptr;
+}
+
+DataFrame* Serialink::operator[](DataFrame::FRAME_TYPE_t type){
+    DataFrame *tmp = this->frameFormat;
+    if (tmp == nullptr) return nullptr;
+    while(tmp != nullptr){
+        if(tmp->getType() == type) return tmp;
+        tmp = tmp->getNext();
+    }
+    return nullptr;
+}
+
+DataFrame* Serialink::operator[](std::pair <DataFrame::FRAME_TYPE_t, int> params){
+    int i = 0;
+    DataFrame *tmp = this->frameFormat;
+    if (tmp == nullptr || i < 0) return nullptr;
+    while(tmp != nullptr){
+        if (tmp->getType() == params.first){
+            if(i == params.second) return tmp;
+            i++;
+        }
+        tmp = tmp->getNext();
+    }
+    return nullptr;
+}
+

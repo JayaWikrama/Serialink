@@ -58,6 +58,12 @@ class Serialink : public Serial {
     Serialink& operator+=(const DataFrame &obj);
 
     Serialink& operator+(const DataFrame &obj);
+
+    DataFrame* operator[](int idx);
+
+    DataFrame* operator[](DataFrame::FRAME_TYPE_t type);
+
+    DataFrame* operator[](std::pair <DataFrame::FRAME_TYPE_t, int> params);
 };
 
 #endif
