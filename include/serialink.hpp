@@ -6,6 +6,7 @@
 
 class Serialink : public Serial {
   private:
+    bool isFormatValid;
     DataFrame *frameFormat;
   public:
     /**
@@ -29,6 +30,13 @@ class Serialink : public Serial {
      * @return alamat memory frameFormat.
      */
     DataFrame *getFormat();
+
+    /**
+     * @brief berfungsi untuk menghentikan pembacaan framed data serial.
+     *
+     * Berfungsi untuk melakukan setup variable yang menjadi indikator valid tidaknya data serial yang diterima sehingga dapat menghentikan pembacaan framed data serial dari user space melalui post execution function yang di setup pada class DataFrame.
+     */
+    void trigInvDataIndicator();
 
     /**
      * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.

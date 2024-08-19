@@ -8,6 +8,7 @@
  * Berfungsi untuk melakukan setup private data dan parameter ke nilai default.
  */
 Serialink::Serialink(){
+    this->isFormatValid = true;
     this->frameFormat = nullptr;
 }
 
@@ -34,6 +35,15 @@ DataFrame *Serialink::getFormat(){
 }
 
 /**
+ * @brief berfungsi untuk menghentikan pembacaan framed data serial.
+ *
+ * Berfungsi untuk melakukan setup variable yang menjadi indikator valid tidaknya data serial yang diterima sehingga dapat menghentikan pembacaan framed data serial dari user space melalui post execution function yang di setup pada class DataFrame.
+ */
+void Serialink::trigInvDataIndicator(){
+    this->isFormatValid = false;
+}
+
+/**
  * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
  *
  * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
@@ -49,6 +59,7 @@ int Serialink::readFramedData(){
     std::vector <unsigned char> vecUC;
     int ret = 0;
     void (*callback)(DataFrame &, void *) = nullptr;
+    this->isFormatValid = true;
     while (tmp != nullptr){
         if (tmp->getExecuteFunction() != nullptr){
             callback = (void (*)(DataFrame &, void *))tmp->getExecuteFunction();
@@ -85,7 +96,7 @@ int Serialink::readFramedData(){
             else if (tmp->getNext() != nullptr) {
                 if (tmp->getNext()->getType() == DataFrame::FRAME_TYPE_STOP_BYTES &&
                     tmp->getNext()->getReference(vecUC) > 0
-		){
+                ){
                     if (this->readUntilStopBytes(vecUC.data(), vecUC.size()) == 0){
                         if (this->getBuffer(vecUC) > 0){
                             size_t sz = vecUC.size() - tmp->getNext()->getSize();
@@ -123,6 +134,10 @@ int Serialink::readFramedData(){
         if (tmp->getPostExecuteFunction() != nullptr){
             callback = (void (*)(DataFrame &, void *))tmp->getPostExecuteFunction();
             callback(*tmp, tmp->getPostExecuteFunctionParam());
+        }
+        if (this->isFormatValid == false){
+            ret = 4;
+            break;
         }
         tmp = tmp->getNext();
         this->data.clear();
