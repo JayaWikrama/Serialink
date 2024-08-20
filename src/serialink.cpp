@@ -145,6 +145,20 @@ int Serialink::readFramedData(){
     if (ret == 0){
         this->frameFormat->getAllData(this->data);
     }
+    else if (ret != 4 && this->frameFormat != tmp && tmp->getType() == DataFrame::FRAME_TYPE_STOP_BYTES){
+        DataFrame *fail = tmp;
+        std::vector <unsigned char> dataFail;
+        tmp = this->frameFormat;
+        while (tmp != fail && tmp != nullptr){
+            tmp->getData(vecUC);
+            if (vecUC.size() > 0) dataFail.insert(dataFail.end(), vecUC.begin(), vecUC.end());
+            tmp = tmp->getNext();
+        }
+        if (this->data.size() > 0) this->remainingData.insert(this->remainingData.begin(), this->data.begin(), this->data.end());
+        if (dataFail.size() > 0) this->remainingData.insert(this->remainingData.begin(), dataFail.begin() + 1, dataFail.end());
+        this->data.clear();
+        this->data.insert(this->data.begin(), dataFail.begin(), dataFail.begin() + 1);
+    }
     else if (tmp != nullptr){
         DataFrame *fail = tmp;
         std::vector <unsigned char> dataFail;
@@ -152,7 +166,7 @@ int Serialink::readFramedData(){
         while (tmp != fail && tmp != nullptr){
             tmp->getData(vecUC);
             if (vecUC.size() > 0) dataFail.insert(dataFail.end(), vecUC.begin(), vecUC.end());
-	    tmp = tmp->getNext();
+            tmp = tmp->getNext();
         }
         if (dataFail.size() > 0) this->data.insert(this->data.begin(), dataFail.begin(), dataFail.end());
     }
