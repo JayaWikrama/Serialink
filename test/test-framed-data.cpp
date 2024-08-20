@@ -25,6 +25,20 @@ void setupLengthByCommand(DataFrame &frame, void *ptr){
         obj->trigInvDataIndicator();
 }
 
+void setupLengthByCommand2(DataFrame &frame, void *ptr){
+    int data = 0;
+    Serialink *obj = (Serialink *) ptr;
+    DataFrame *target = frame.getNext()->getNext()->getNext()->getNext();
+    if (target == nullptr) return;
+    frame.getData((unsigned char *) &data, 1);
+    if (data > 3){
+        target->setSize(data - 3);
+    }
+    else {
+        obj->trigInvDataIndicator();
+    }
+}
+
 class SerialinkFramedDataTest:public::testing::Test {
 protected:
     Serialink slave;
@@ -478,6 +492,63 @@ TEST_F(SerialinkFramedDataTest, ReadTest_withPrefixAndSuffix_3) {
     ASSERT_EQ(slave.getBuffer(tmp), 7);
     ASSERT_EQ(tmp.size(), 7);
     ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "zxcvbnm", 7), 0);
+    ASSERT_EQ(slave.getRemainingDataSize(), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
+    ASSERT_EQ(slave.getRemainingBuffer(tmp), 0);
+    ASSERT_EQ(tmp.size(), 0);
+}
+
+TEST_F(SerialinkFramedDataTest, ReadTest_withPrefixAndSuffix_4) {
+    unsigned char buffer[64];
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    std::vector <unsigned char> tmp;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(1000);
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, 1, (const unsigned char *) "\x02");
+    DataFrame lengthBytes(DataFrame::FRAME_TYPE_CONTENT_LENGTH, 1);
+    lengthBytes.setPostExecuteFunction((const void *) &setupLengthByCommand2, (void *) &slave);
+    DataFrame canBytes(DataFrame::FRAME_TYPE_DATA, 1);
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, 1);
+    DataFrame idBytes(DataFrame::FRAME_TYPE_DATA, 1);
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA);
+    DataFrame crcBytes(DataFrame::FRAME_TYPE_VALIDATOR, 2);
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, 1, (const unsigned char *) "\x03");
+    slave = startBytes + lengthBytes + canBytes + cmdBytes + idBytes + dataBytes + crcBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:1]:<<02>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_CONTENT_LENGTH[size:1]:<<>><<exeFunc:0>><<postFunc:" + std::to_string((unsigned long) &setupLengthByCommand2) + ">>\n"
+              "FRAME_TYPE_DATA[size:1]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:1]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:0]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_VALIDATOR[size:2]:<<>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:1]:<<03>><<exeFunc:0>><<postFunc:0>>\n");
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData((const unsigned char *) "\x02\x05\x13\x14\x02\x05\x13\x14\x02\x05\x13\x14\x02\x05\x13\x14\x02\x05\x13\x14\x02\x05\x13\x14\x02\x05\x13\x14\x03\x02\x05\x13\x14\x02\x05\x13\x14\x00\x12\x12\x13\x14\x03", 43), 0);
+    ASSERT_EQ(master.begin(), true);
+    for (int i = 0; i < 8; i++){
+        ASSERT_EQ(slave.readFramedData(), 2);
+        ASSERT_EQ(slave.getDataSize(), 1);
+        ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 1);
+        ASSERT_EQ(buffer[0], 0x02);
+        ASSERT_EQ(slave.getBuffer(tmp), 1);
+        ASSERT_EQ(tmp.size(), 1);
+        ASSERT_EQ(tmp[0], 0x02);
+    }
+    ASSERT_EQ(slave.readFramedData(), 0);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 0 && diffTime <= 75, true);
+    ASSERT_EQ(slave.getDataSize(), 10);
+    ASSERT_EQ(slave.getBuffer(buffer, sizeof(buffer)), 10);
+    ASSERT_EQ(memcmp(buffer, (const unsigned char *) "\x02\x05\x13\x14\x00\x12\x12\x13\x14\x03", 10), 0);
+    ASSERT_EQ(slave.getBuffer(tmp), 10);
+    ASSERT_EQ(tmp.size(), 10);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "\x02\x05\x13\x14\x00\x12\x12\x13\x14\x03", 10), 0);
     ASSERT_EQ(slave.getRemainingDataSize(), 0);
     ASSERT_EQ(slave.getRemainingBuffer(buffer, sizeof(buffer)), 0);
     ASSERT_EQ(slave.getRemainingBuffer(tmp), 0);
