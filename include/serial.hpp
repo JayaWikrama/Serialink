@@ -65,6 +65,7 @@ class Serial {
     unsigned int keepAliveMs;
     std::string port;
     pthread_mutex_t mtx;
+    pthread_mutex_t wmtx;
   protected:
     std::vector <unsigned char> data;
     std::vector <unsigned char> remainingData;

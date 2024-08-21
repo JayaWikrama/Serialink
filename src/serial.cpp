@@ -23,9 +23,11 @@ void Serial::setFileDescriptor(int fd)
 void Serial::setFileDescriptor(HANDLE fd)
 #endif
 {
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
     this->fd = fd;
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
 }
 
 /**
@@ -51,6 +53,7 @@ void Serial::setFileDescriptor(HANDLE fd)
  * @return false jika gagal
  */
 bool Serial::setupAttributes(){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
     bool result = false;
 #if defined(PLATFORM_POSIX) || defined(__linux__)
@@ -62,6 +65,7 @@ bool Serial::setupAttributes(){
 #endif
     if (result == false){
         pthread_mutex_unlock(&(this->mtx));
+        pthread_mutex_unlock(&(this->wmtx));
         return false;
     }
 #if defined(PLATFORM_POSIX) || defined(__linux__)
@@ -102,6 +106,7 @@ bool Serial::setupAttributes(){
     }
 #endif
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
     return result;
 }
 
@@ -125,6 +130,7 @@ Serial::Serial(){
     this->keepAliveMs = 0;
     this->port = "/dev/ttyUSB0";
     pthread_mutex_init(&(this->mtx), NULL);
+    pthread_mutex_init(&(this->wmtx), NULL);
 }
 
 /**
@@ -147,6 +153,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
     this->keepAliveMs = 0;
     this->port = port;
     pthread_mutex_init(&(this->mtx), NULL);
+    pthread_mutex_init(&(this->wmtx), NULL);
 }
 
 /**
@@ -169,6 +176,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsig
     this->keepAliveMs = keepAliveMs;
     this->port = port;
     pthread_mutex_init(&(this->mtx), NULL);
+    pthread_mutex_init(&(this->wmtx), NULL);
 }
 
 /**
@@ -177,6 +185,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsig
  * Berfungsi untuk melakukan release setiap memory yang dialokasikan.
  */
 Serial::~Serial(){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     if (this->fd > 0){
@@ -187,7 +196,9 @@ Serial::~Serial(){
     CloseHandle(this->fd);
 #endif
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
     pthread_mutex_destroy(&(this->mtx));
+    pthread_mutex_destroy(&(this->wmtx));
 }
 
 /**
@@ -197,9 +208,11 @@ Serial::~Serial(){
  * @param port port device serial.
  */
 void Serial::setPort(const std::string port){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
     this->port = port;
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
 }
 
 /**
@@ -221,9 +234,11 @@ void Serial::setBaudrate(speed_t baud){
  * @param timeout timeout per 100ms.
  */
 void Serial::setTimeout(unsigned int timeout){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
     this->timeout = timeout;
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
 }
 
 /**
@@ -233,9 +248,11 @@ void Serial::setTimeout(unsigned int timeout){
  * @param keepAliveMs waktu dalam Milliseconds.
  */
 void Serial::setKeepAlive(unsigned int keepAliveMs){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
     this->keepAliveMs = keepAliveMs;
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
 }
 
 /**
@@ -286,6 +303,7 @@ unsigned int Serial::getKeepAlive(){
  * @return 1 jika gagal
  */
 int Serial::openPort(){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     this->fd = open (this->port.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
@@ -296,10 +314,13 @@ int Serial::openPort(){
 #endif
     {
         pthread_mutex_unlock(&(this->mtx));
+        pthread_mutex_unlock(&(this->wmtx));
 		return 1;
 	}
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
     bool success = this->setupAttributes();
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
     if (success == false){
 #if defined(PLATFORM_POSIX) || defined(__linux__)
@@ -309,9 +330,11 @@ int Serial::openPort(){
         CloseHandle(this->fd);
 #endif
         pthread_mutex_unlock(&(this->mtx));
+        pthread_mutex_unlock(&(this->wmtx));
         return 1;
     }
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
     return 0;
 }
 
@@ -899,11 +922,11 @@ size_t Serial::getRemainingBuffer(std::vector <unsigned char> &buffer){
  * @return 2 jika gagal melakukan penulisan data.
  */
 int Serial::writeData(const unsigned char *buffer, size_t sz){
-    pthread_mutex_lock(&(this->mtx));
+    pthread_mutex_lock(&(this->wmtx));
     size_t total = 0;
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     if (this->fd <= 0){
-        pthread_mutex_unlock(&(this->mtx));
+        pthread_mutex_unlock(&(this->wmtx));
         return 1;
     }
     ssize_t bytes = 0;
@@ -923,11 +946,11 @@ int Serial::writeData(const unsigned char *buffer, size_t sz){
             total += bytes;
         }
         else {
-            pthread_mutex_unlock(&(this->mtx));
+            pthread_mutex_unlock(&(this->wmtx));
             return 2;
         }
     }
-    pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
     return 0;
 }
 
@@ -976,6 +999,7 @@ int Serial::writeData(const std::string buffer){
  * Berfungsi untuk melakukan penutupan port serial komunikasi
  */
 void Serial::closePort(){
+    pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     if (this->fd > 0) close(this->fd);
@@ -984,4 +1008,5 @@ void Serial::closePort(){
     CloseHandle(this->fd);
 #endif
     pthread_mutex_unlock(&(this->mtx));
+    pthread_mutex_unlock(&(this->wmtx));
 }
