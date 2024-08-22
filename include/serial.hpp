@@ -444,6 +444,14 @@ class Serial {
     size_t getBuffer(std::vector <unsigned char> &buffer);
 
     /**
+     * @brief berfungsi untuk melakukan pengambilan data buffer read sebagai vector.
+     *
+     * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read sebagai vector.
+     * @return vector data buffer yang telah sukses terbaca.
+     */
+    std::vector <unsigned char> getBufferAsVector();
+
+    /**
      * @brief berfungsi untuk melakukan pengambilan jumlah data yang terdapat pada remaining buffer.
      *
      * Berfungsi untuk mengambil informasi nilai jumlah data yang terdapat pada remaining buffer.
