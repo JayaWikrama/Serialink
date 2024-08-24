@@ -470,13 +470,21 @@ class Serial {
     size_t getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz);
 
     /**
-     * @brief function overloading untuk __readStopBytes__ dengan parameter output menggunakan vector.
+     * @brief function overloading untuk __getRemainingBuffer__ dengan parameter output menggunakan vector.
      *
      * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.
      * @param buffer variable untuk menampung data serial yang sukses terbaca.
      * @return ukuran atau size data serial.
      */
     size_t getRemainingBuffer(std::vector <unsigned char> &buffer);
+
+    /**
+     * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer dan mengembalikan nilainya sebagai vector.
+     *
+     * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer dan mengembalikan nilainya sebagai vector.
+     * @return vector data remaining buffer yang telah sukses terbaca.
+     */
+    std::vector <unsigned char> getRemainingBufferAsVector();
 
     /**
      * @brief berfungsi untuk melakukan operasi penulisan data serial.
