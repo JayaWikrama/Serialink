@@ -230,6 +230,52 @@ TEST_F(SerialinkFramedDataTest, OperatorOverloading_5) {
     ASSERT_EQ(frame, nullptr);
 }
 
+TEST_F(SerialinkFramedDataTest, OperatorOverloading_6) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, "5");
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA, "678");
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes + dataBytes + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<35>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:3]:<<363738>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    tmp = slave.getSpecificBufferAsVector(DataFrame::FRAME_TYPE_COMMAND, DataFrame::FRAME_TYPE_DATA);
+    ASSERT_EQ(tmp.size(), 4);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "5678", 4), 0);
+}
+
+TEST_F(SerialinkFramedDataTest, OperatorOverloading_7) {
+    unsigned char buffer[8];
+    std::vector <unsigned char> tmp;
+    DataFrame startBytes(DataFrame::FRAME_TYPE_START_BYTES, "1234");
+    DataFrame cmdBytes(DataFrame::FRAME_TYPE_COMMAND, "5");
+    DataFrame dataBytes(DataFrame::FRAME_TYPE_DATA, "678");
+    DataFrame cmdBytes1(DataFrame::FRAME_TYPE_COMMAND, "Q");
+    DataFrame dataBytes1(DataFrame::FRAME_TYPE_DATA, "WER");
+    DataFrame cmdBytes2(DataFrame::FRAME_TYPE_COMMAND, "A");
+    DataFrame dataBytes2(DataFrame::FRAME_TYPE_DATA, "SDF");
+    DataFrame stopBytes(DataFrame::FRAME_TYPE_STOP_BYTES, "90-=");
+    slave = startBytes + cmdBytes + dataBytes + cmdBytes1 + dataBytes1 + cmdBytes2 + dataBytes2 + stopBytes;
+    ASSERT_EQ(slave.getFormat()->getDataFrameFormat(),
+              "FRAME_TYPE_START_BYTES[size:4]:<<31323334>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<35>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:3]:<<363738>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<51>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:3]:<<574552>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_COMMAND[size:1]:<<41>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_DATA[size:3]:<<534446>><<exeFunc:0>><<postFunc:0>>\n"
+              "FRAME_TYPE_STOP_BYTES[size:4]:<<39302D3D>><<exeFunc:0>><<postFunc:0>>\n");
+    DataFrame *begin = slave[{DataFrame::FRAME_TYPE_COMMAND, 1}];
+    DataFrame *end = slave[{DataFrame::FRAME_TYPE_DATA, 2}];
+    tmp = slave.getSpecificBufferAsVector(begin, end);
+    ASSERT_EQ(tmp.size(), 8);
+    ASSERT_EQ(memcmp(tmp.data(), (const unsigned char *) "QWERASDF", 8), 0);
+}
+
 /* Read Test */
 
 TEST_F(SerialinkFramedDataTest, WriteTest_1) {
