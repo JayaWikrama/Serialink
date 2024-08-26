@@ -61,6 +61,26 @@ class Serialink : public Serial {
      */
     int writeFramedData();
 
+    /**
+     * @brief berfungsi untuk mengambil data buffer yang berhasil terbaca dan tersimpan di dalam Framed Data dengan range tertentu.
+     *
+     * Berfungsi untuk melakukan operasi pengambilan data buffer yang berhasil terbaca dan tersimpan di dalam Framed Data dengan range tertentu. Method dengan parameter ini cocok digunakan pada data dengan Frame Format yang unik setiap Frame-nya (tidak ada type Frame yang kembar).
+     * @param begin merupakan referensi titik awal pengambilan data.
+     * @param end merupakan referensi titik akhir pengambilan data.
+     * @return data dalam bentuk vector.
+     */
+    std::vector <unsigned char> getSpecificBufferAsVector(DataFrame::FRAME_TYPE_t begin, DataFrame::FRAME_TYPE_t end);
+
+    /**
+     * @brief overloading dari method __getSpecificBufferAsVector__.
+     *
+     * Berfungsi untuk melakukan operasi pengambilan data buffer yang berhasil terbaca dan tersimpan di dalam Framed Data dengan range tertentu. Method dengan parameter ini cocok digunakan jika terdapat Frame Format yang kembar pada Framed Data yang dibangun.
+     * @param begin merupakan referensi titik awal pengambilan data.
+     * @param end merupakan referensi titik akhir pengambilan data.
+     * @return data dalam bentuk vector.
+     */
+    std::vector <unsigned char> getSpecificBufferAsVector(const DataFrame *begin, const DataFrame *end);
+
     Serialink& operator=(const DataFrame &obj);
 
     Serialink& operator+=(const DataFrame &obj);
