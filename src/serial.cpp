@@ -1,6 +1,29 @@
+/*
+ * $Id: serial.cpp,v 1.0 2024/08/25 13:03:53 Jaya Wikrama Exp $
+ *
+ * Copyright (c) 2024 Jaya Wikrama
+ * jayawikrama89@gmail.com
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
+
 #include <iostream>
 #include <errno.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,10 +35,11 @@
 #include "serial.hpp"
 
 /**
- * @brief setter untuk file descriptor.
+ * @brief Sets the file descriptor.
  *
- * Berfungsi untuk melakukan setup nilai file descriptor.
- * @param fd file descriptor.
+ * This setter function assigns a value to the file descriptor.
+ *
+ * @param fd The file descriptor to be set.
  */
 #if defined(PLATFORM_POSIX) || defined(__linux__)
 void Serial::setFileDescriptor(int fd)
@@ -31,10 +55,11 @@ void Serial::setFileDescriptor(HANDLE fd)
 }
 
 /**
- * @brief getter untuk file descriptor.
+ * @brief Gets the file descriptor.
  *
- * Berfungsi untuk melakukan pengambilan informasi nilai file descriptor.
- * @return file descriptor.
+ * This getter function retrieves the current value of the file descriptor.
+ *
+ * @return The current file descriptor.
  */
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     int Serial::getFileDescriptor()
@@ -46,11 +71,12 @@ void Serial::setFileDescriptor(HANDLE fd)
 }
 
 /**
- * @brief setup serial attributes.
+ * @brief Configures serial port attributes.
  *
- * Berfungsi untuk melakukan setup atau pengaturan pada atribut file descriptor dari port serial yang sukses terbuka.
- * @return true jika sukses
- * @return false jika gagal
+ * This function sets up or configures the attributes of the file descriptor for a successfully opened serial port.
+ *
+ * @return true if the configuration is successful.
+ * @return false if the configuration fails.
  */
 bool Serial::setupAttributes(){
     pthread_mutex_lock(&(this->wmtx));
@@ -113,13 +139,13 @@ bool Serial::setupAttributes(){
 /**
  * @brief Default constructor.
  *
- * Berfungsi untuk melakukan setup private data dan parameter ke nilai default. Diantaranya:
- * fd = -1
- * baud = B9600
- * timeout = 10 (1 detik)
- * keepAliveMs = 0
- * port = /dev/ttyUSB0
- * Initialize mutex
+ * This constructor initializes private data members and parameters to their default values, including:
+ * - `fd = -1` : File descriptor is set to an invalid state.
+ * - `baud = B9600` : Baud rate is set to 9600 bps.
+ * - `timeout = 10` : Timeout is set to 10 deciseconds (1 second).
+ * - `keepAliveMs = 0` : Keep-alive interval is set to 0 milliseconds.
+ * - `port = "/dev/ttyUSB0"` : Default serial port is set to `/dev/ttyUSB0`.
+ * - Initializes the mutex for thread safety.
  */
 Serial::Serial(){
 #if defined(PLATFORM_POSIX) || defined(__linux__)
@@ -136,13 +162,14 @@ Serial::Serial(){
 /**
  * @brief Custom constructor.
  *
- * Berfungsi untuk melakukan setup private data dan parameter ke nilai default (kecuali untuk port, baud, dan timeout). Diantaranya:
- * fd = -1
- * keepAliveMs = 0
- * Initialize mutex
- * @param port port device serial.
- * @param baud baudrate.
- * @param timeout timeout per 100ms.
+ * This constructor initializes private data members to their default values (except for `port`, `baud`, and `timeout`), including:
+ * - `fd = -1` : File descriptor is set to an invalid state.
+ * - `keepAliveMs = 0` : Keep-alive interval is set to 0 milliseconds.
+ * - Initializes the mutex for thread safety.
+ *
+ * @param port The serial port device (e.g., "/dev/ttyUSB0").
+ * @param baud The baud rate for the serial communication.
+ * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
  */
 Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
 #if defined(PLATFORM_POSIX) || defined(__linux__)
@@ -159,13 +186,14 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
 /**
  * @brief Custom constructor.
  *
- * Berfungsi untuk melakukan setup private data dan parameter ke nilai default (kecuali untuk port, baud, timeout, dan keepAliveMs). Diantaranya:
- * fd = -1
- * Initialize mutex
- * @param port port device serial.
- * @param baud baudrate.
- * @param timeout timeout per 100ms.
- * @param keepAliveMs waktu dalam milliseconds.
+ * This constructor initializes private data members to their default values (except for `port`, `baud`, `timeout`, and `keepAliveMs`), including:
+ * - `fd = -1` : File descriptor is set to an invalid state.
+ * - Initializes the mutex for thread safety.
+ *
+ * @param port The serial port device (e.g., "/dev/ttyUSB0").
+ * @param baud The baud rate for the serial communication.
+ * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
+ * @param keepAliveMs Keep-alive interval in milliseconds.
  */
 Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs){
     #if defined(PLATFORM_POSIX) || defined(__linux__)
@@ -182,7 +210,8 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsig
 /**
  * @brief Destructor.
  *
- * Berfungsi untuk melakukan release setiap memory yang dialokasikan.
+ * This destructor is responsible for releasing any memory that has been allocated during the object's lifetime.
+ * It ensures that all allocated resources are properly freed, preventing memory leaks.
  */
 Serial::~Serial(){
     pthread_mutex_lock(&(this->wmtx));
@@ -202,10 +231,11 @@ Serial::~Serial(){
 }
 
 /**
- * @brief setter untuk port device serial.
+ * @brief Sets the serial port device.
  *
- * Berfungsi untuk melakukan setup port device serial yang digunakan
- * @param port port device serial.
+ * This setter function configures the serial port device to be used for communication.
+ *
+ * @param port The serial port device (e.g., "/dev/ttyUSB0").
  */
 void Serial::setPort(const std::string port){
     pthread_mutex_lock(&(this->wmtx));
@@ -216,10 +246,11 @@ void Serial::setPort(const std::string port){
 }
 
 /**
- * @brief setter untuk port baudrate.
+ * @brief Sets the baud rate for communication.
  *
- * Berfungsi untuk melakukan setup baudrate komunikasi yang digunakan
- * @param baud baudrate.
+ * This setter function configures the baud rate used for serial communication.
+ *
+ * @param baud The baud rate (e.g., `B9600` for 9600 bps).
  */
 void Serial::setBaudrate(speed_t baud){
     pthread_mutex_lock(&(this->mtx));
@@ -228,10 +259,11 @@ void Serial::setBaudrate(speed_t baud){
 }
 
 /**
- * @brief setter untuk timeout komunikasi.
+ * @brief Sets the communication timeout.
  *
- * Berfungsi untuk melakukan setup timeout komunikasi serial
- * @param timeout timeout per 100ms.
+ * This setter function configures the timeout for serial communication. The timeout value is specified in units of 100 milliseconds.
+ *
+ * @param timeout The timeout value (e.g., `10` for a 1-second timeout).
  */
 void Serial::setTimeout(unsigned int timeout){
     pthread_mutex_lock(&(this->wmtx));
@@ -242,10 +274,11 @@ void Serial::setTimeout(unsigned int timeout){
 }
 
 /**
- * @brief setter untuk keep alive komunikasi.
+ * @brief Sets the keep-alive interval for communication.
  *
- * Berfungsi untuk melakukan setup maksimal waktu tunggu untuk membaca data serial selanjutnya setelah bytes pertama data serial berhasil diterima.
- * @param keepAliveMs waktu dalam Milliseconds.
+ * This setter function configures the maximum wait time for receiving the next byte of serial data after the initial byte has been received. This helps maintain the connection by ensuring timely data reception.
+ *
+ * @param keepAliveMs The keep-alive interval in milliseconds.
  */
 void Serial::setKeepAlive(unsigned int keepAliveMs){
     pthread_mutex_lock(&(this->wmtx));
@@ -256,51 +289,56 @@ void Serial::setKeepAlive(unsigned int keepAliveMs){
 }
 
 /**
- * @brief getter untuk port serial.
+ * @brief Gets the serial port.
  *
- * Berfungsi untuk melakukan pengambilan data port serial yang digunakan
- * @return string port.
+ * This getter function retrieves the serial port currently being used.
+ *
+ * @return The serial port as a string (e.g., "/dev/ttyUSB0").
  */
 std::string Serial::getPort(){
     return this->port;
 }
 
 /**
- * @brief getter untuk baudrate.
+ * @brief Gets the baud rate for serial communication.
  *
- * Berfungsi untuk melakukan pengambilan data baudrate komunikasi serial yang digunakan
- * @return baudrate.
+ * This getter function retrieves the baud rate currently configured for serial communication.
+ *
+ * @return The baud rate (e.g., `B9600` for 9600 bps).
  */
 speed_t Serial::getBaudrate(){
     return this->baud;
 }
 
 /**
- * @brief getter untuk timeout komunikasi.
+ * @brief Gets the communication timeout.
  *
- * Berfungsi untuk melakukan pengambilan data timeout komunikasi serial
- * @return timeout per 100ms.
+ * This getter function retrieves the timeout value configured for serial communication. The timeout is specified in units of 100 milliseconds.
+ *
+ * @return The timeout value (e.g., `10` for a 1-second timeout).
  */
 unsigned int Serial::getTimeout(){
     return this->timeout;
 }
 
 /**
- * @brief getter untuk keep alive komunikasi.
+ * @brief Gets the keep-alive interval for communication.
  *
- * Berfungsi untuk melakukan pengambilan data maksimal waktu tunggu untuk membaca data serial selanjutnya setelah bytes pertama data serial berhasil diterima
- * @return timeout per 100ms.
+ * This getter function retrieves the maximum wait time configured for receiving the next byte of serial data after the initial byte has been successfully received. The interval is specified in milliseconds.
+ *
+ * @return The keep-alive interval in milliseconds.
  */
 unsigned int Serial::getKeepAlive(){
     return this->keepAliveMs;
 }
 
 /**
- * @brief open port serial.
+ * @brief Opens the serial port for communication.
  *
- * Berfungsi untuk melakukan open port serial komunikasi
- * @return 0 jika sukses
- * @return 1 jika gagal
+ * This function attempts to open the specified serial port for communication. It configures the port according to the current settings and prepares it for data transfer.
+ *
+ * @return 0 if the port is successfully opened.
+ * @return 1 if the port fails to open.
  */
 int Serial::openPort(){
     pthread_mutex_lock(&(this->wmtx));
@@ -340,11 +378,12 @@ int Serial::openPort(){
 
 #if defined(PLATFORM_POSIX) || defined(__linux__)
 /**
- * @brief berfungsi untuk melakukan penyecekan input bytes.
+ * @brief Checks for available input bytes.
  *
- * Berfungsi untuk melakukan pengecekan apakah ada input bytes pada buffer serial descriptor.
- * @return true jika terdapat input bytes pada buffer serial descriptor.
- * @return false jika tidak terdapat input bytes pada buffer serial descriptor.
+ * This function checks whether there are any bytes available in the serial buffer for reading.
+ *
+ * @return `true` if there are bytes available in the serial buffer.
+ * @return `false` if there are no bytes available in the serial buffer.
  */
 bool Serial::isInputBytesAvailable(){
     pthread_mutex_lock(&(this->mtx));
@@ -359,14 +398,15 @@ bool Serial::isInputBytesAvailable(){
 #endif
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial.
+ * @brief Performs a serial data read operation.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial tanpa memisahkan data yang sukses terbaca menjadi data dengan size yang diinginkan dengan data sisa. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param sz jumlah data yang ingin dibaca. __sz__ = 0 berarti jumlah data yang akan dibaca tidak terbatas (hingga __keepAliveMs__ terpenuhi).
- * @param dontSplitRemainingData mode untuk melakukan penonaktifkan fungsi pemisahan data secara otomatis berdasarkan jumlah data yang ingin dibaca.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function reads data from the serial port without separating the successfully read data into the desired size and remaining data. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param sz The number of bytes to read. A value of `0` means that the read operation is unlimited (up to the `keepAliveMs` timeout).
+ * @param dontSplitRemainingData A flag to disable automatic data splitting based on the amount of data requested.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readData(size_t sz, bool dontSplitRemainingData){
     pthread_mutex_lock(&(this->mtx));
@@ -437,39 +477,42 @@ int Serial::readData(size_t sz, bool dontSplitRemainingData){
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial.
+ * @brief Overloaded method for `readData` to perform serial data reading.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param sz jumlah data yang ingin dibaca. __sz__ = 0 berarti jumlah data yang akan dibaca tidak terbatas (hingga __keepAliveMs__ terpenuhi).
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This overloaded method performs a serial data read operation. The successfully read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param sz The number of bytes to read. A value of `0` means that the read operation is unlimited (up to the `keepAliveMs` timeout).
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readData(size_t sz){
     return this->readData(sz, false);
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial.
+ * @brief Overloaded method for `readData` to perform serial data reading.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This overloaded method performs a serial data read operation. The successfully read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readData(){
     return this->readData(0, false);
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan.
+ * @brief Reads serial data until the desired start bytes are found.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param startBytes data start bytes yang ingin ditemukan.
- * @param sz ukuran data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function performs a serial data read operation until the specified start bytes are detected. Any serial data read before the start bytes are found is automatically discarded. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param startBytes A pointer to the start bytes data to be detected.
+ * @param sz The size of the start bytes data to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
     size_t i = 0;
@@ -521,53 +564,57 @@ int Serial::readStartBytes(const unsigned char *startBytes, size_t sz){
 }
 
 /**
- * @brief function overloading untuk __readStartBytes__ dengan input menggunakan const char *.
+ * @brief Overloaded method for `readStartBytes` with `const char*` input.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param startBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This overloaded function performs a serial data read operation until the specified start bytes are detected. Any serial data read before the start bytes are found is automatically discarded. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param startBytes A pointer to the start bytes data to be detected, provided as a `const char*`.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readStartBytes(const char *startBytes){
     return this->readStartBytes((const unsigned char *) startBytes, strlen(startBytes));
 }
 
 /**
- * @brief function overloading untuk __readStartBytes__ dengan input menggunakan vector.
+ * @brief Overloaded method for `readStartBytes` with `std::vector<unsigned char>` input.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param startBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This overloaded function performs a serial data read operation until the specified start bytes are detected. Any serial data read before the start bytes are found is automatically discarded. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param startBytes A vector containing the start bytes data to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readStartBytes(const std::vector <unsigned char> startBytes){
     return this->readStartBytes(startBytes.data(), startBytes.size());
 }
 
 /**
- * @brief function overloading untuk __readStartBytes__ dengan input menggunakan string.
+ * @brief Overloaded method for `readStartBytes` with `std::string` input.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya start bytes yang diinginkan. Data serial sebelum start bytes yang diinginkan secara otomatis dihapus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param startBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This overloaded function performs a serial data read operation until the specified start bytes are detected. Any serial data read before the start bytes are found is automatically discarded. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param startBytes A string containing the start bytes data to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readStartBytes(const std::string startBytes){
     return this->readStartBytes((const unsigned char *) startBytes.c_str(), startBytes.length());
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan.
+ * @brief Performs a serial data read operation until the specified stop bytes are detected.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @param sz ukuran data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function reads serial data until the specified stop bytes are detected. Any serial data read up to and including the stop bytes is automatically stored in the buffer. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes The data representing the stop bytes to be detected.
+ * @param sz The size of the stop bytes data to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
     size_t i = 0;
@@ -625,54 +672,58 @@ int Serial::readUntilStopBytes(const unsigned char *stopBytes, size_t sz){
 }
 
 /**
- * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan const char *.
+ * @brief Overloaded function for `readUntilStopBytes` with input as `const char*`.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function reads serial data until the specified stop bytes are detected. Any serial data read up to and including the stop bytes is automatically stored in the buffer. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A pointer to a null-terminated character array representing the stop bytes to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readUntilStopBytes(const char *stopBytes){
     return this->readUntilStopBytes((const unsigned char *) stopBytes, strlen(stopBytes));
 }
 
 /**
- * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan vector.
+ * @brief Overloaded function for `readUntilStopBytes` with input as `std::vector<unsigned char>`.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function reads serial data until the specified stop bytes are detected. Any serial data read up to and including the stop bytes is automatically stored in the buffer. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A vector of `unsigned char` representing the stop bytes to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readUntilStopBytes(const std::vector <unsigned char> stopBytes){
     return this->readUntilStopBytes(stopBytes.data(), stopBytes.size());
 }
 
 /**
- * @brief function overloading untuk __readUntilStopBytes__ dengan input menggunakan string.
+ * @brief Overloaded function for `readUntilStopBytes` with input as `std::string`.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga ditemukannya stop bytes yang diinginkan. Data serial sebelum stop bytes yang diinginkan secara otomatis ikut tersimpan kedalam buffer. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function reads serial data until the specified stop bytes are detected. Any serial data read up to and including the stop bytes is automatically stored in the buffer. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A string representing the stop bytes to be detected.
+ * @return `0` if the operation is successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readUntilStopBytes(const std::string stopBytes){
     return this->readUntilStopBytes((const unsigned char *) stopBytes.c_str(), stopBytes.length());
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial sekaligus pengecekan apakah data tersebut adalah stop bytes yang diinginkan.
+ * @brief Reads serial data and checks if the data matches the specified stop bytes.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial sekaligus melakukan pengecekan apakah data tersebut adalah stop bytes yang diinginkan. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @param sz ukuran data start bytes yang ingin ditemukan.
- * @return 0 jika sukses dan data valid.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
- * @return 3 jika terdapat data serial yang terbaca tetapi tidak sesuai dengan stop bytes yang diinginkan.
+ * This method performs serial data reading while simultaneously checking if the data matches the desired stop bytes. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A pointer to the stop bytes data to be detected.
+ * @param sz The size of the stop bytes data to be detected.
+ * @return `0` if the operation is successful and the data is valid.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
+ * @return `3` if data is read but does not match the specified stop bytes.
  */
 int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
     bool found = false;
@@ -723,55 +774,59 @@ int Serial::readStopBytes(const unsigned char *stopBytes, size_t sz){
 }
 
 /**
- * @brief function overloading untuk __readStopBytes__ dengan input menggunakan const char *.
+ * @brief Function overloading for `readStopBytes` with input using `const char*`.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial sekaligus melakukan pengecekan apakah data tersebut adalah stop bytes yang diinginkan. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses dan data valid.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
- * @return 3 jika terdapat data serial yang terbaca tetapi tidak sesuai dengan stop bytes yang diinginkan.
+ * This method performs serial data reading while simultaneously checking if the data matches the specified stop bytes. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A C-style string (null-terminated) representing the stop bytes to be detected.
+ * @return `0` if the operation is successful and the data is valid.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
+ * @return `3` if data is read but does not match the specified stop bytes.
  */
 int Serial::readStopBytes(const char *stopBytes){
     return this->readStopBytes((const unsigned char *) stopBytes, strlen(stopBytes));
 }
 
 /**
- * @brief function overloading untuk __readStopBytes__ dengan input menggunakan vector.
+ * @brief Function overloading for `readStopBytes` with input using `std::vector`.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial sekaligus melakukan pengecekan apakah data tersebut adalah stop bytes yang diinginkan. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses dan data valid.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
- * @return 3 jika terdapat data serial yang terbaca tetapi tidak sesuai dengan stop bytes yang diinginkan.
+ * This method performs serial data reading while simultaneously checking if the data matches the specified stop bytes. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A `std::vector` containing the stop bytes data to be detected.
+ * @return `0` if the operation is successful and the data is valid.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
+ * @return `3` if data is read but does not match the specified stop bytes.
  */
 int Serial::readStopBytes(const std::vector <unsigned char> stopBytes){
     return this->readStopBytes(stopBytes.data(), stopBytes.size());
 }
 
 /**
- * @brief function overloading untuk __readStopBytes__ dengan input menggunakan string.
+ * @brief Function overloading for `readStopBytes` with input using `std::string`.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial sekaligus melakukan pengecekan apakah data tersebut adalah stop bytes yang diinginkan. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param stopBytes data start bytes yang ingin ditemukan.
- * @return 0 jika sukses dan data valid.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
- * @return 3 jika terdapat data serial yang terbaca tetapi tidak sesuai dengan stop bytes yang diinginkan.
+ * This method performs serial data reading while simultaneously checking if the data matches the specified stop bytes. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param stopBytes A `std::string` object representing the stop bytes to be detected.
+ * @return `0` if the operation is successful and the data is valid.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
+ * @return `3` if data is read but does not match the specified stop bytes.
  */
 int Serial::readStopBytes(const std::string stopBytes){
     return this->readStopBytes((const unsigned char *) stopBytes.c_str(), stopBytes.length());
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi pembacaan data serial hingga sejumlah data yang diinginkan terpenuhi.
+ * @brief Performs serial data reading until the desired amount of data is received.
  *
- * Berfungsi untuk melakukan operasi pembacaan data serial hingga sejumlah data yang diinginkan terpenuhi. Pengulangan dilakukan maksimal 3 kali terhitung setelah data pertama diterima. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
- * @param sz ukuran data serial yang ingin dibaca.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika timeout.
+ * This function performs the operation of reading serial data until the specified amount of data is fulfilled. The operation retries up to 3 times, starting from the first data received. The read serial data can be accessed using the `Serial::getBuffer` method.
+ *
+ * @param sz The size of the serial data to be read.
+ * @return `0` if successful.
+ * @return `1` if the port is not open.
+ * @return `2` if a timeout occurs.
  */
 int Serial::readNBytes(size_t sz){
     size_t i = 0;
@@ -822,22 +877,24 @@ int Serial::readNBytes(size_t sz){
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan jumlah data yang berhasil terbaca.
+ * @brief Retrieves the amount of successfully read data.
  *
- * Berfungsi untuk mengambil informasi nilai jumlah data yang berhasil terbaca.
- * @return ukuran atau size data serial dalam bytes.
+ * This function retrieves the information about the size of the data that has been successfully read.
+ *
+ * @return The size of the serial data in bytes.
  */
 size_t Serial::getDataSize(){
     return this->data.size();
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan data buffer read.
+ * @brief Retrieves the read data buffer.
  *
- * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
- * @param buffer variable untuk menampung data serial yang sukses terbaca.
- * @param maxBufferSz batasan ukuran data maksimum yang dapat ditampung oleh variable buffer.
- * @return ukuran atau size data serial.
+ * This function retrieves all the data that has been successfully read by the `read` method.
+ *
+ * @param buffer A variable to hold the serial data that has been successfully read.
+ * @param maxBufferSz The maximum size of the data that can be accommodated in the buffer.
+ * @return The size of the serial data read.
  */
 size_t Serial::getBuffer(unsigned char *buffer, size_t maxBufferSz){
     pthread_mutex_lock(&(this->mtx));
@@ -854,11 +911,14 @@ size_t Serial::getBuffer(unsigned char *buffer, size_t maxBufferSz){
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan data buffer read.
+ * @brief Overloaded method for `getBuffer` with `std::vector<unsigned char>` as the output parameter.
  *
- * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read.
- * @param buffer variable untuk menampung data serial yang sukses terbaca.
- * @return ukuran atau size data serial.
+ * Retrieves all the data that has been successfully read by the `read` method.
+ *
+ * This overload allows you to use a `std::vector<unsigned char>` as the buffer to hold the serial data.
+ *
+ * @param buffer A `std::vector<unsigned char>` to hold the serial data that has been successfully read.
+ * @return The size of the serial data read.
  */
 size_t Serial::getBuffer(std::vector <unsigned char> &buffer){
     buffer.clear();
@@ -867,10 +927,11 @@ size_t Serial::getBuffer(std::vector <unsigned char> &buffer){
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan data buffer read sebagai vector.
+ * @brief Retrieves the read data buffer as a vector.
  *
- * Berfungsi untuk mengambil semua data yang telah sukses terbaca pada method read sebagai vector.
- * @return vector data buffer yang telah sukses terbaca.
+ * This method returns all the data that has been successfully read by the `read` method as a `std::vector<unsigned char>`.
+ *
+ * @return A `std::vector<unsigned char>` containing the serial data that has been successfully read.
  */
 std::vector <unsigned char> Serial::getBufferAsVector(){
     std::vector <unsigned char> tmp;
@@ -879,22 +940,24 @@ std::vector <unsigned char> Serial::getBufferAsVector(){
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan jumlah data yang terdapat pada remaining buffer.
+ * @brief Retrieves the number of bytes in the remaining buffer.
  *
- * Berfungsi untuk mengambil informasi nilai jumlah data yang terdapat pada remaining buffer.
- * @return ukuran atau size data serial dalam bytes.
+ * This method provides the size of the data that is still present in the remaining buffer.
+ *
+ * @return The size of the remaining data in bytes.
  */
 size_t Serial::getRemainingDataSize(){
     return this->remainingData.size();
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer.
+ * @brief Retrieves the remaining serial data read outside of the data buffer.
  *
- * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.
- * @param buffer variable untuk menampung data serial yang sukses terbaca.
- * @param maxBufferSz batasan ukuran data maksimum yang dapat ditampung oleh variable buffer.
- * @return ukuran atau size data serial.
+ * This method extracts all remaining serial data that has been successfully read but is outside the main data buffer.
+ *
+ * @param buffer Variable to hold the remaining serial data read.
+ * @param maxBufferSz Maximum size of data that can be held by the buffer variable.
+ * @return The size of the serial data read.
  */
 size_t Serial::getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz){
     pthread_mutex_lock(&(this->mtx));
@@ -911,11 +974,12 @@ size_t Serial::getRemainingBuffer(unsigned char *buffer, size_t maxBufferSz){
 }
 
 /**
- * @brief function overloading untuk __getRemainingBuffer__ dengan parameter output menggunakan vector.
+ * @brief Overloading method for __getRemainingBuffer__ with output parameter as vector.
  *
- * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer.
- * @param buffer variable untuk menampung data serial yang sukses terbaca.
- * @return ukuran atau size data serial.
+ * Retrieves all remaining serial data that has been successfully read but is outside the main data buffer.
+ *
+ * @param buffer Variable to hold the remaining serial data read, provided as a vector.
+ * @return The size of the remaining serial data read.
  */
 size_t Serial::getRemainingBuffer(std::vector <unsigned char> &buffer){
     buffer.clear();
@@ -924,10 +988,11 @@ size_t Serial::getRemainingBuffer(std::vector <unsigned char> &buffer){
 }
 
 /**
- * @brief berfungsi untuk melakukan pengambilan sisa data serial yang sukses terbaca diluar data buffer dan mengembalikan nilainya sebagai vector.
+ * @brief Retrieves remaining serial data that has been successfully read but is outside the main data buffer, returning it as a vector.
  *
- * Berfungsi untuk mengambil semua sisa data serial yang telah sukses terbaca diluar data buffer dan mengembalikan nilainya sebagai vector.
- * @return vector data remaining buffer yang telah sukses terbaca.
+ * This method retrieves all remaining serial data that has been read successfully but is not included in the main data buffer, and returns it as a vector.
+ *
+ * @return std::vector<unsigned char> containing the remaining serial data that has been successfully read.
  */
 std::vector <unsigned char> Serial::getRemainingBufferAsVector(){
     std::vector <unsigned char> tmp;
@@ -936,14 +1001,15 @@ std::vector <unsigned char> Serial::getRemainingBufferAsVector(){
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ * @brief Performs the operation of writing serial data.
  *
- * Berfungsi untuk melakukan operasi penulisan data serial.
- * @param buffer data yang ingin ditulis.
- * @param sz ukuran data yang ingin ditulis.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika gagal melakukan penulisan data.
+ * This method writes the specified data to the serial port.
+ *
+ * @param buffer Data to be written.
+ * @param sz Size of the data to be written.
+ * @return 0 if the operation is successful.
+ * @return 1 if the port is not open.
+ * @return 2 if the data write operation fails.
  */
 int Serial::writeData(const unsigned char *buffer, size_t sz){
     pthread_mutex_lock(&(this->wmtx));
@@ -979,48 +1045,53 @@ int Serial::writeData(const unsigned char *buffer, size_t sz){
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ * @brief Method overloading of `writeData` with input as `const char*`.
  *
- * Berfungsi untuk melakukan operasi penulisan data serial.
- * @param buffer data yang ingin ditulis.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika gagal melakukan penulisan data.
+ * This method writes the specified data to the serial port. This overload allows the data to be passed as a `const char*`.
+ *
+ * @param buffer Data to be written.
+ * @return 0 if the operation is successful.
+ * @return 1 if the port is not open.
+ * @return 2 if the data write operation fails.
  */
 int Serial::writeData(const char *buffer){
     return this->writeData((const unsigned char *) buffer, strlen(buffer));
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ * @brief Method overloading of `writeData` with input as `std::vector <unsigned char>`.
  *
- * Berfungsi untuk melakukan operasi penulisan data serial.
- * @param buffer data yang ingin ditulis.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika gagal melakukan penulisan data.
+ * This method writes the specified data to the serial port. This overload allows the data to be passed as a `std::vector <unsigned char>`.
+ *
+ * @param buffer Data to be written.
+ * @return 0 if the operation is successful.
+ * @return 1 if the port is not open.
+ * @return 2 if the data write operation fails.
  */
 int Serial::writeData(const std::vector <unsigned char> buffer){
     return this->writeData(buffer.data(), buffer.size());
 }
 
 /**
- * @brief berfungsi untuk melakukan operasi penulisan data serial.
+ * @brief Method overloading of `writeData` with input as `std::string`.
  *
- * Berfungsi untuk melakukan operasi penulisan data serial.
- * @param buffer data yang ingin ditulis.
- * @return 0 jika sukses.
- * @return 1 jika port belum terbuka.
- * @return 2 jika gagal melakukan penulisan data.
+ * This method writes the specified data to the serial port. This overload allows the data to be passed as a `std::string`.
+ *
+ * @param buffer Data to be written.
+ * @return 0 if the operation is successful.
+ * @return 1 if the port is not open.
+ * @return 2 if the data write operation fails.
  */
 int Serial::writeData(const std::string buffer){
     return this->writeData((const unsigned char *) buffer.c_str(), buffer.length());
 }
 
 /**
- * @brief menutup port serial komunikasi.
+ * @brief Closes the serial communication port.
  *
- * Berfungsi untuk melakukan penutupan port serial komunikasi
+ * This function is used to close the currently open serial communication port,
+ * ensuring that the port is no longer in use and that any associated system resources
+ * are released.
  */
 void Serial::closePort(){
     pthread_mutex_lock(&(this->wmtx));

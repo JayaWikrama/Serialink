@@ -1,3 +1,56 @@
+/*
+ * $Id: virtuser.hpp,v 1.0.0 2024/07/29 18:41:03 Jaya Wikrama Exp $
+ *
+ * Copyright (c) 2024 Jaya Wikrama
+ * jayawikrama89@gmail.com
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
+
+
+/**
+ * @file virtuser.hpp
+ * @brief Header file for virtual serial port functionality and handler functions.
+ *
+ * This file defines a set of functions and classes for creating and managing virtual
+ * serial ports. The functionalities provided allow for the simulation of serial
+ * communication interfaces, which can be useful for testing, debugging, or developing
+ * applications that interact with serial ports without requiring physical hardware.
+ *
+ * The key components included in this file are:
+ * - Definitions and classes for virtual serial ports.
+ * - Functions to create, configure, and manage virtual serial ports.
+ * - Handler functions to manage data flow and events on virtual serial ports.
+ * - Utility functions for simulating serial communication scenarios and testing.
+ *
+ * The virtual serial ports provided by this file can be used to simulate communication
+ * between software components or to test applications that rely on serial data exchange.
+ * The handler functions offer control over how data is processed and how events are
+ * handled, providing a flexible and powerful toolset for developers.
+ *
+ * @note This file is intended for use in environments where physical serial ports are
+ *       not available or practical. It is particularly useful in development and
+ *       testing scenarios.
+ *
+ * @version 1.0.0
+ * @date 2024-07-29
+ * @author Jaya Wikrama
+ */
+
 #ifndef __VIRTUAL_SERIAL_DEVICE_HPP__
 #define __VIRTUAL_SERIAL_DEVICE_HPP__
 
@@ -12,66 +65,76 @@ class VirtualSerial : public Serial {
     /**
      * @brief Default constructor.
      *
-     * Berfungsi untuk melakukan menciptakan virtual serial port. Nama atau alamat virtual port untuk slave dapat diambil dengan method __getVirtualPortName__.
-     * baud = B9600
-     * timeout = 10 (1 detik)
-     * keepAliveMs = 0
-     * Initialize mutex
+     * Initializes a virtual serial port. The name or address of the virtual port for the slave
+     * can be obtained using the `getVirtualPortName` method.
+     *
+     * Default parameters:
+     * - Baud rate: B9600
+     * - Timeout: 10 (1 second)
+     * - Keep-alive interval: 0 milliseconds
+     *
+     * Initializes a mutex for thread safety.
      */
     VirtualSerial();
 
     /**
-     * @brief custom constructor.
+     * @brief Custom constructor.
      *
-     * Berfungsi untuk melakukan menciptakan virtual serial port. Nama atau alamat virtual port untuk slave dapat diambil dengan method __getVirtualPortName__.
-     * @param port port device serial.
-     * @param baud baudrate.
-     * @param timeout timeout per 100ms.
-     * @param keepAliveMs waktu dalam Milliseconds.
+     * Initializes a virtual serial port with specified settings. The name or address of the virtual port for the slave
+     * can be obtained using the `getVirtualPortName` method.
+     *
+     * @param baud The baud rate for the serial communication.
+     * @param timeout The timeout period in 100 milliseconds.
+     * @param keepAliveMs The keep-alive interval in milliseconds.
      */
     VirtualSerial(speed_t baud, unsigned int timeout, unsigned int keepAliveMs);
 
     /**
      * @brief Destructor.
      *
-     * Berfungsi untuk melakukan release setiap memory yang dialokasikan dan menutup port master dari virtual serial.
+     * Releases all allocated memory and closes the master port of the virtual serial port.
      */
     ~VirtualSerial();
 
     /**
-     * @brief setter untuk callback function yang dapat digunakan dalam pengoperasian baca dan tulis data port master dari virtual serial port.
+     * @brief Sets the callback function for read and write operations on the master port of the virtual serial port.
      *
-     * @param func pointer dari callback function.
-     * @param param parameter pointer dari callback function.
+     * This method allows you to specify a callback function that will be used for handling data operations
+     * (reading and writing) on the virtual serial port's master port.
+     *
+     * @param func Pointer to the callback function.
+     * @param param Pointer to the parameter for the callback function.
      */
     void setCallback(const void *func, void *param);
 
     /**
-     * @brief getter untuk callback function yang digunakan dalam pengoperasian baca dan tulis data port master dari virtual serial port.
+     * @brief Gets the callback function used for read and write operations on the master port of the virtual serial port.
      *
-     * @return pointer dari callback function.
+     * @return Pointer to the callback function.
      */
     const void *getCallbackFunction();
 
     /**
-     * @brief getter untuk callback function yang digunakan dalam pengoperasian baca dan tulis data port master dari virtual serial port.
+     * @brief Gets the parameter pointer used for the callback function in read and write operations on the master port of the virtual serial port.
      *
-     * @return parameter pointer dari callback function.
+     * @return Pointer to the parameter of the callback function.
      */
     void *getCallbackParam();
 
     /**
-     * @brief getter untuk nama virtual serial port.
+     * @brief Gets the name of the virtual serial port.
      *
-     * @return nama virtual serial port (slave).
+     * @return The name of the virtual serial port (slave).
      */
     std::string getVirtualPortName();
 
     /**
-     * @brief Method untuk memulai menjalankan callback function.
+     * @brief Method to start executing the callback function.
      *
-     * @return false jika callback function belum di-setup.
-     * @return true jika callback function telah selesai dijalankan.
+     * This method initiates the execution of the previously set callback function.
+     *
+     * @return `false` if the callback function has not been set up.
+     * @return `true` if the callback function has been successfully executed.
      */
     bool begin();
 };

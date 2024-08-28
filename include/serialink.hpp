@@ -1,3 +1,39 @@
+/*
+ * $Id: serialink.hpp,v 1.0.0 2024/08/27 20:51:47 Jaya Wikrama Exp $
+ *
+ * Copyright (c) 2024 Jaya Wikrama
+ * jayawikrama89@gmail.com
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
+
+/**
+ * @file
+ * @brief Advance Serial Protocol (with framed data) library.
+ *
+ * This library provides a robust implementation of a serial communication protocol
+ * that includes data framing. It is designed for reliable data exchange over serial
+ * connections, supporting error detection and packet-based communication.
+ *
+ * @version 1.0.0
+ * @date 2024-08-27
+ * @author Jaya Wikrama
+ */
+
 #ifndef __SERIALLINK_HPP__
 #define __SERIALLINK_HPP__
 
@@ -10,74 +46,86 @@ class Serialink : public Serial {
     DataFrame *frameFormat;
   public:
     /**
-     * @brief Default constructor.
-     *
-     * Berfungsi untuk melakukan setup private data dan parameter ke nilai default.
-     */
+    * @brief Default constructor.
+    *
+    * Initializes private data members and parameters to their default values.
+    */
     Serialink();
 
     /**
      * @brief Destructor.
      *
-     * Berfungsi untuk melakukan release setiap memory yang dialokasikan.
+     * Releases any allocated memory.
      */
     ~Serialink();
 
     /**
-     * @brief berfungsi untuk mengambil alamat memory frameFormat.
+     * @brief Retrieves the memory address of the frame format.
      *
-     * Berfungsi untuk mengambil informasi alamat memory frameFormat.
-     * @return alamat memory frameFormat.
+     * This function returns the address of the `frameFormat` data member.
+     *
+     * @return The memory address of the `frameFormat`.
      */
     DataFrame *getFormat();
 
     /**
-     * @brief berfungsi untuk menghentikan pembacaan framed data serial.
+     * @brief Stops reading framed serial data.
      *
-     * Berfungsi untuk melakukan setup variable yang menjadi indikator valid tidaknya data serial yang diterima sehingga dapat menghentikan pembacaan framed data serial dari user space melalui post execution function yang di setup pada class DataFrame.
+     * This function sets up variables that act as indicators for the validity of the received serial data,
+     * allowing it to stop reading framed serial data from user space. It achieves this by using a post-execution
+     * function configured within the `DataFrame` class.
      */
     void trigInvDataIndicator();
 
     /**
-     * @brief berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus.
+     * @brief Performs serial data read operations with a custom frame format.
      *
-     * Berfungsi untuk melakukan operasi pembacaan data serial dengan format frame khusus. Data serial yang terbaca dapat diambil dengan method __Serial::getBuffer__.
-     * @return 0 jika sukses.
-     * @return 1 jika port belum terbuka.
-     * @return 2 jika timeout.
-     * @return 3 jika frame format belum di setup.
-     * @return 4 jika terdapat format frame data yang tidak valid.
+     * This function executes serial data reading operations using a specific frame format.
+     * The read serial data can be retrieved using the `__Serial::getBuffer__` method.
+     *
+     * @return 0 on success.
+     * @return 1 if the port is not open.
+     * @return 2 if a timeout occurs.
+     * @return 3 if the frame format is not set up.
+     * @return 4 if the frame data format is invalid.
      */
     int readFramedData();
 
     /**
-     * @brief berfungsi untuk melakukan operasi penulisan data serial dengan format frame khusus.
+     * @brief Performs serial data write operations with a custom frame format.
      *
-     * Berfungsi untuk melakukan operasi penulisan data serial dengan format frame khusus.
-     * @return 0 jika sukses.
-     * @return 1 jika port belum terbuka.
-     * @return 2 jika timeout.
-     * @return 3 jika tidak ada data yang akan ditulis.
+     * This function executes serial data write operations using a specific frame format.
+     *
+     * @return 0 on success.
+     * @return 1 if the port is not open.
+     * @return 2 if a timeout occurs.
+     * @return 3 if there is no data to write.
      */
     int writeFramedData();
 
     /**
-     * @brief berfungsi untuk mengambil data buffer yang berhasil terbaca dan tersimpan di dalam Framed Data dengan range tertentu.
+     * @brief Retrieves a buffer of data read and stored in the Framed Data within a specified range.
      *
-     * Berfungsi untuk melakukan operasi pengambilan data buffer yang berhasil terbaca dan tersimpan di dalam Framed Data dengan range tertentu. Method dengan parameter ini cocok digunakan pada data dengan Frame Format yang unik setiap Frame-nya (tidak ada type Frame yang kembar).
-     * @param begin merupakan referensi titik awal pengambilan data.
-     * @param end merupakan referensi titik akhir pengambilan data.
-     * @return data dalam bentuk vector.
+     * This method extracts data from the buffer that has been successfully read and stored in the Framed Data
+     * within the specified range. This version is suitable for data with unique Frame Formats in each frame
+     * (no duplicate Frame Types).
+     *
+     * @param begin Reference to the starting point for data extraction.
+     * @param end Reference to the ending point for data extraction.
+     * @return A vector containing the data.
      */
     std::vector <unsigned char> getSpecificBufferAsVector(DataFrame::FRAME_TYPE_t begin, DataFrame::FRAME_TYPE_t end);
 
     /**
-     * @brief overloading dari method __getSpecificBufferAsVector__.
+     * @brief Overloaded method of __getSpecificBufferAsVector__.
      *
-     * Berfungsi untuk melakukan operasi pengambilan data buffer yang berhasil terbaca dan tersimpan di dalam Framed Data dengan range tertentu. Method dengan parameter ini cocok digunakan jika terdapat Frame Format yang kembar pada Framed Data yang dibangun.
-     * @param begin merupakan referensi titik awal pengambilan data.
-     * @param end merupakan referensi titik akhir pengambilan data.
-     * @return data dalam bentuk vector.
+     * This method performs the same data extraction operation as the other overload but is designed to handle
+     * cases where duplicate Frame Formats exist within the Framed Data. It retrieves data from the buffer
+     * that has been successfully read and stored within the specified range.
+     *
+     * @param begin Pointer to the starting point for data extraction.
+     * @param end Pointer to the ending point for data extraction.
+     * @return A vector containing the data.
      */
     std::vector <unsigned char> getSpecificBufferAsVector(const DataFrame *begin, const DataFrame *end);
 

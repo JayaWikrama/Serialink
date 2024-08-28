@@ -1,27 +1,27 @@
 
-# Library Serialink
+# Serialink Library
 
-Serialink adalah sebuah library untuk komunikasi serial yang dirancang khusus untuk mendukung dan mempermudah proses pengembangan perangkat lunak pada lingkungan Linux. Library ini menyediakan antarmuka (interface) dan pengaturan yang sederhana, sehingga mudah diterapkan dalam berbagai aplikasi. Selain itu, Serialink mendukung komunikasi serial yang lebih advance, termasuk komunikasi yang menggunakan protokol khusus (framed data).
+Serialink is a library for serial communication designed to support and simplify software development in Linux environments. This library provides a straightforward interface and configuration, making it easy to integrate into various applications. Additionally, Serialink supports advanced serial communication, including communication using specific protocols (framed data).
 
-## Persiapan Installasi Library
+## Installation
 
-Lakukan installasi paket-paket berikut.
+Follow these steps to install the necessary packages and dependencies.
 
-### Installasi Compiller dan CMake
+### Installing Compiler and CMake
 
-1. Installasi Compiler:
+1. Install the Compiler:
 
 ```bash
 sudo apt install build-essential g++ binutils
 ```
 
-3. Installasi CMake:
+3. Install CMake:
 
 ```bash
 sudo apt install make cmake
 ```
 
-### Installasi Google Test
+### Installing Google Test
 
 1. Clone repository:
 
@@ -29,13 +29,13 @@ sudo apt install make cmake
 git clone https://github.com/google/googletest.git -b v1.14.0
 ```
 
-2. Masuk ke directory dari repository yang sudah di-clone:
+2. Navigate to the cloned repository directory:
 
 ```bash
 cd googletest
 ```
 
-3. Compile Google Test Library:
+3. Build the Google Test Library:
 
 ```bash
 mkdir build
@@ -50,65 +50,65 @@ make
 sudo make install
 ```
 
-5. Kembali ke root directory:
+5. Return to the root directory:
 
 ```bash
 cd ../../
 ```
 
-## Compile Library
+## Building the Library for Test
 
-1. Clone main repository:
+1. Clone the main repository:
 
 ```bash
 git clone https://github.com/JayaWikrama/Serialink.git
 ```
 
-2. Pindah ke direktori proyek:
+2. Navigate to the project directory:
 
 ```bash
 cd Serialink
 ```
 
-3. Clone semua git submodule:
+3. Initialize and update all Git submodules:
 
 ```bash
 git submodule init 
 git submodule update --init --recursive
 ```
 
-4. Jika suatu saat ingin menggunakan source code yang terbaru (yang sama dengan remote repository), jalankan perintah berikut:
+4. If you want to use the latest source code (same as the remote repository), run:
 
 ```bash
 git submodule update --remote
 ```
 
-5. Buat direktori build:
+5. Create a build directory:
 
 ```bash
 mkdir build
 cd build
 ```
 
-6. Konfigurasi CMake:
+6. Configure CMake:
 
 ```bash
 cmake ..
 ```
 
-7. Lakukan kompilasi:
+7. Build the library:
 
 ```bash
 make
 ```
 
-8. Jalankan unit test untuk memastikan semua fungsi berjalan dengan normal:
+8. Run the unit tests to ensure all functions are working correctly:
 
 ```bash
 ./Serialink-test
 ```
 
-Output hasil test:
+Sample test output:
 
 ```bash
 [==========] Running 35 tests from 2 test suites.
@@ -148,11 +148,11 @@ Virtual serial port ready
 [  PASSED  ] 35 tests.
 ```
 
-## Penggunaan Library
+## Using the Library
 
-Salah satu cara menggunakan library ini adalah dengan mengintegrasikannya ke aplikasi utama sebagai git submodule. Berikut contoh cara membuat project baru dan mengintegrasikan library Serialink kedalamnya:
+One way to use this library is by integrating it into your main application as a Git submodule. Here’s an example of how to create a new project and integrate the Serialink library into it:
 
-1. Buat project tree-nya terlebih dahulu.
+1. Create the project tree.
 
 ```bash
 mkdir SerialReceiveApp
@@ -163,20 +163,20 @@ mkdir external
 git init .
 ```
 
-2. Tambahkan library Serialink sebagai external library
+2. Add the Serialink library as an external library.
 
 ```bash
 git submodule add https://github.com/JayaWikrama/Serialink.git external/Serialink
 git submodule update --init --recursive
 ```
 
-3. Buat source code aplikasi utama.
+3. Create the main application source code.
 
 ```bash
 nano src/main.cpp
 ```
 
-Berikut source code aplikasinya.
+Here is the sample source code.
 
 ```cpp
 #include <iostream>
@@ -324,15 +324,15 @@ int main(int argc, char **argv){
 }
 ```
 
-Simpan file dengan menekan `[Ctrl + o]` kemudian tekan `[Enter]`. Selanjutnya keluar dari editor dengan menekan `[Ctrl + x]`.
+Save file by press `[Ctrl + o]` on your keyboard and then press `[Enter]`. After that press `[Ctrl + x]`.
 
-4. Buat konfigurasi `cmake` untuk project tersebut.
+4. Create a `CMakeLists.txt` file.
 
 ```bash
 nano CMakeLists.txt
 ```
 
-Ketik konfigurasi berikut:
+Here is `cmake` configuration:
 
 ```bash
 cmake_minimum_required(VERSION 3.0.0)
@@ -388,19 +388,19 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -O3")
 set(CMAKE_USE_RELATIVE_PATHS OFF)
 ```
 
-Simpan file dengan menekan `[Ctrl + o]` kemudian tekan `[Enter]`. Selanjutnya keluar dari editor dengan menekan `[Ctrl + x]`.
+Save file by press `[Ctrl + o]` on your keyboard and then press `[Enter]`. After that press `[Ctrl + x]`.
 
-### Penjelasan
+### Explanation
 
-- Pada line 29, terdapat `$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/Serialink/include>` yang berfungsi untuk menambah referensi lokasi file header dari Serialink Library.
+- Line 29: The `$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/Serialink/include>` command adds a reference to the header file location of the Serialink Library. This ensures that during the build process, CMake can locate the Serialink headers correctly.
 
-- Pada line 34, terdapat `add_dependencies(${PROJECT_NAME} Serialink-lib)` yang berfungsi untuk menjadikan Serialink Library sebagai dependency dari aplikasi utama. Sehingga library tersebut akan dibuat/di-compile terlebih dahulu sebelum aplikasi utama.
+- Line 34: The `add_dependencies(${PROJECT_NAME} Serialink-lib)` command specifies that the Serialink Library must be built before the main application. This ensures that the Serialink Library is compiled before the main project depends on it.
 
-- Pada line 37, terdapat `target_link_libraries(${PROJECT_NAME} PRIVATE Serialink-lib DataFrame-lib)` yang berfungsi untuk menghubungkan Serialink Library dan DataFrame Library (dependency Serialink Library) ke aplikasi utama sebagai Private Library.
+- Line 37: The `target_link_libraries(${PROJECT_NAME} PRIVATE Serialink-lib DataFrame-lib)` command links the Serialink Library and the DataFrame Library (a dependency of the Serialink Library) to the main application as private libraries. This means that these libraries are used internally by the main project.
 
-- Pada line 40, terdapat `add_subdirectory(external/Serialink EXCLUDE_FROM_ALL)` yang berfungsi untuk menambahkan directory `external/Serialink` sebagai bagian dari project utama.
+- Line 40: The `add_subdirectory(external/Serialink EXCLUDE_FROM_ALL)` command adds the external/Serialink directory as part of the main project. The EXCLUDE_FROM_ALL option prevents CMake from building this subdirectory by default unless explicitly requested.
 
-5. Project sudah siap dikompilasi. Lakukan kompilasi dengan perintah berikut:
+5. Build the project.
 
 ```bash
 mkdir build
@@ -409,16 +409,14 @@ cmake ..
 make
 ```
 
-6. Setelah project berhasil terkompilasi, aplikasi dapat dijalankan dengan perintah berikut:
+6. Run the application.
 
 ```bash
 ./SerialReceiver <port> <timeout100ms> <keepAliveMs>
 ```
 
-Contoh:
+Example:
 
 ```bash
 ./SerialReceiver /dev/ttyUSB0 10 500
 ```
-
-yang berarti aplikasi `SerialReceiver` akan melakukan pembacaan terhadap port `/dev/ttyUSB0` dengan timeout setiap pembacaan sebesar `1 detik` dan timeout antar bytes (setelah byte pertama diterima) sebesar `500ms`.
