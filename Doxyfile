@@ -1,0 +1,36 @@
+# Doxyfile
+
+# Dokumentasi sumber kode Doxygen
+
+# Konfigurasi dasar
+PROJECT_NAME           = "Serialink Library"
+PROJECT_VERSION        = "1.0.0"
+OUTPUT_DIRECTORY       = ./docs
+CREATE_SUBDIRS         = NO
+OUTPUT_LANGUAGE        = English
+MARKDOWN_SUPPORT       = YES
+
+# File dan folder untuk dimasukkan dalam dokumentasi
+INPUT                  = ./include ./README.md
+FILE_PATTERNS          = *.hpp *.md
+RECURSIVE              = NO
+EXCLUDE                = */test/*
+
+# Ekstensi file yang akan diabaikan
+EXTENSION_MAPPING      = hpp=C++
+                         
+# Struktur folder sumber kode
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+STRIP_FROM_PATH        = ../
+
+# Tampilan halaman depan
+USE_MDFILE_AS_MAINPAGE = README.md
+
+# Fitur-fitur lainnya
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+HIDE_UNDOC_MEMBERS     = YES
+QUIET                  = YES
