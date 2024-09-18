@@ -264,6 +264,10 @@ bool VirtualSerialProxy::begin(){
       std::cout << "Linking " << this->pty->getVirtualPortName() << " to " << this->symlinkPort << " failed!" << std::endl;
       this->dev->closePort();
     }
+    this->pty->setPort(this->symlinkPort);
+  }
+  else {
+    this->pty->setPort(this->pty->getVirtualPortName());
   }
   fd_set readfds;
   int max = 0;
