@@ -136,19 +136,6 @@ class Serial {
 #endif
 
     /**
-     * @brief Gets the file descriptor.
-     *
-     * This getter function retrieves the current value of the file descriptor.
-     *
-     * @return The current file descriptor.
-     */
-#if defined(PLATFORM_POSIX) || defined(__linux__)
-    int getFileDescriptor();
-#else
-    HANDLE getFileDescriptor();
-#endif
-
-    /**
      * @brief Configures serial port attributes.
      *
      * This function sets up or configures the attributes of the file descriptor for a successfully opened serial port.
@@ -278,6 +265,19 @@ class Serial {
      * @return The keep-alive interval in milliseconds.
      */
     unsigned int getKeepAlive();
+
+    /**
+     * @brief Gets the file descriptor.
+     *
+     * This getter function retrieves the current value of the file descriptor.
+     *
+     * @return The current file descriptor.
+     */
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    int getFileDescriptor();
+#else
+    HANDLE getFileDescriptor();
+#endif
 
     /**
      * @brief Opens the serial port for communication.

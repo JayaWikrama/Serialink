@@ -50,6 +50,7 @@ set(SOURCE_FILES
     src/serial.cpp
     src/virtuser.cpp
     src/serialink.cpp
+    src/virtual-proxy.cpp
 )
 
 # Create a library from common code
@@ -70,6 +71,7 @@ set_target_properties(${PROJECT_NAME}-lib PROPERTIES
 # Create the executable
 add_executable(${PROJECT_NAME} examples/main.cpp)
 add_executable(${PROJECT_NAME}-virtual examples/main-virtual.cpp)
+add_executable(${PROJECT_NAME}-proxy examples/main-proxy.cpp)
 
 # Create Unit Test executable
 add_executable(${PROJECT_NAME}-test test/test-simple.cpp test/test-framed-data.cpp)
@@ -87,12 +89,15 @@ include_directories(${PROJECT_NAME}-test PUBLIC ${GTEST_INCLUDE_DIRS})
 # Ensure DataFrame is built before the executable
 add_dependencies(${PROJECT_NAME} DataFrame-lib)
 add_dependencies(${PROJECT_NAME}-virtual DataFrame-lib)
+add_dependencies(${PROJECT_NAME}-proxy DataFrame-lib)
 
 # Link the executable with the library
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread)
 target_link_libraries(${PROJECT_NAME}-virtual PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
 target_link_libraries(${PROJECT_NAME}-virtual PUBLIC -lpthread)
+target_link_libraries(${PROJECT_NAME}-proxy PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
+target_link_libraries(${PROJECT_NAME}-proxy PUBLIC -lpthread)
 
 add_subdirectory(external/DataFrame EXCLUDE_FROM_ALL)
 set(USE_EXE_FUNC ON)
