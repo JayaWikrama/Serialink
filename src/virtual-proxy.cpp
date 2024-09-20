@@ -280,17 +280,22 @@ bool VirtualSerialProxy::begin(){
     if (this->dev->getFileDescriptor() > 0) FD_SET(this->dev->getFileDescriptor(), &readfds);
     if (this->pty->getFileDescriptor() > 0) FD_SET(this->pty->getFileDescriptor(), &readfds);
     max = (this->dev->getFileDescriptor() > this->pty->getFileDescriptor() ? this->dev->getFileDescriptor() : this->pty->getFileDescriptor());
-    ret = select(max + 1 , &readfds , NULL , NULL , &tv);
-    if (ret >= 0){
-      if (FD_ISSET(this->dev->getFileDescriptor(), &readfds)){
-        callback(*(this->dev), *(this->pty), this->passthroughParam);
+    if (max > 0){
+      ret = select(max + 1 , &readfds , NULL , NULL , &tv);
+      if (ret >= 0){
+        if (FD_ISSET(this->dev->getFileDescriptor(), &readfds)){
+          callback(*(this->dev), *(this->pty), this->passthroughParam);
+        }
+        else if (FD_ISSET(this->pty->getFileDescriptor(), &readfds)){
+          callback(*(this->pty), *(this->dev), this->passthroughParam);
+        }
       }
-      else if (FD_ISSET(this->pty->getFileDescriptor(), &readfds)){
-        callback(*(this->pty), *(this->dev), this->passthroughParam);
+      else {
+        usleep(125000);
       }
     }
     else {
-      usleep(125000);
+      usleep(250000);
     }
   }
   return true;
