@@ -183,9 +183,11 @@ int Serialink::readFramedData(){
             tmp = tmp->getNext();
         }
         if (this->data.size() > 0) this->remainingData.insert(this->remainingData.begin(), this->data.begin(), this->data.end());
-        if (dataFail.size() > 0) this->remainingData.insert(this->remainingData.begin(), dataFail.begin() + 1, dataFail.end());
         this->data.clear();
-        this->data.insert(this->data.begin(), dataFail.begin(), dataFail.begin() + 1);
+        if (!dataFail.empty()){
+            if (dataFail.size() > 1) this->remainingData.insert(this->remainingData.begin(), dataFail.begin() + 1, dataFail.end());
+            if (dataFail.size() > 1) this->data.insert(this->data.begin(), dataFail.begin(), dataFail.begin() + 1);
+        }
     }
     else if (tmp != nullptr){
         DataFrame *fail = tmp;
