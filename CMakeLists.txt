@@ -58,13 +58,25 @@ add_library(${PROJECT_NAME}-lib SHARED
   ${SOURCE_FILES}
 )
 
+add_library(${PROJECT_NAME}-ar STATIC
+  ${SOURCE_FILES}
+)
+
 # Set library output name
 set_target_properties(${PROJECT_NAME}-lib PROPERTIES
   OUTPUT_NAME ${PROJECT_NAME}
 )
 
+set_target_properties(${PROJECT_NAME}-ar PROPERTIES
+  OUTPUT_NAME ${PROJECT_NAME}
+)
+
 # Skip creating symbolic links
 set_target_properties(${PROJECT_NAME}-lib PROPERTIES
+  SKIP_BUILD_RPATH 1
+)
+
+set_target_properties(${PROJECT_NAME}-ar PROPERTIES
   SKIP_BUILD_RPATH 1
 )
 
@@ -84,6 +96,13 @@ target_include_directories(${PROJECT_NAME}-lib PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+target_include_directories(${PROJECT_NAME}-ar PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/DataFrame/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 include_directories(${PROJECT_NAME}-test PUBLIC ${GTEST_INCLUDE_DIRS})
 
 # Ensure DataFrame is built before the executable
@@ -92,6 +111,7 @@ add_dependencies(${PROJECT_NAME}-virtual DataFrame-lib)
 add_dependencies(${PROJECT_NAME}-proxy DataFrame-lib)
 
 # Link the executable with the library
+target_link_libraries(${PROJECT_NAME}-ar ${CMAKE_CURRENT_SOURCE_DIR}/external/DataFrame/build/DataFrame.a)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread)
 target_link_libraries(${PROJECT_NAME}-virtual PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
