@@ -106,9 +106,21 @@ int Serialink::readFramedData(){
             }
         }
         else if (tmp->getType() == DataFrame::FRAME_TYPE_CONTENT_LENGTH ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_COMMAND ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_SN ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_RFU ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_BLOCK_NUMBER ||
                  tmp->getType() == DataFrame::FRAME_TYPE_DATA ||
-                 tmp->getType() == DataFrame::FRAME_TYPE_VALIDATOR ||
-                 tmp->getType() == DataFrame::FRAME_TYPE_COMMAND
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_1 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_2 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_3 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_4 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_5 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_6 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_7 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_8 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_DATA_9 ||
+                 tmp->getType() == DataFrame::FRAME_TYPE_VALIDATOR
         ){
             if (tmp->getSize() > 0){
                 if (this->readNBytes(tmp->getSize()) == 0){
