@@ -48,6 +48,7 @@ find_package(GTest REQUIRED)
 # Specify the source files
 set(SOURCE_FILES
     src/serial.cpp
+    src/usb-serial.cpp
     src/virtuser.cpp
     src/serialink.cpp
     src/virtual-proxy.cpp
@@ -76,12 +77,9 @@ set_target_properties(${PROJECT_NAME}-lib PROPERTIES
   SKIP_BUILD_RPATH 1
 )
 
-set_target_properties(${PROJECT_NAME}-ar PROPERTIES
-  SKIP_BUILD_RPATH 1
-)
-
 # Create the executable
 add_executable(${PROJECT_NAME} examples/main.cpp)
+add_executable(${PROJECT_NAME}-usb examples/main-usb-serial.cpp)
 add_executable(${PROJECT_NAME}-virtual examples/main-virtual.cpp)
 add_executable(${PROJECT_NAME}-proxy examples/main-proxy.cpp)
 
@@ -107,17 +105,20 @@ include_directories(${PROJECT_NAME}-test PUBLIC ${GTEST_INCLUDE_DIRS})
 
 # Ensure DataFrame is built before the executable
 add_dependencies(${PROJECT_NAME} DataFrame-lib)
+add_dependencies(${PROJECT_NAME}-usb DataFrame-lib)
 add_dependencies(${PROJECT_NAME}-virtual DataFrame-lib)
 add_dependencies(${PROJECT_NAME}-proxy DataFrame-lib)
 
 # Link the executable with the library
 target_link_libraries(${PROJECT_NAME}-ar ${CMAKE_CURRENT_SOURCE_DIR}/external/DataFrame/build/DataFrame.a)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread -lusb-1.0)
+target_link_libraries(${PROJECT_NAME}-usb PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
+target_link_libraries(${PROJECT_NAME}-usb PUBLIC -lpthread -lusb-1.0)
 target_link_libraries(${PROJECT_NAME}-virtual PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
-target_link_libraries(${PROJECT_NAME}-virtual PUBLIC -lpthread)
+target_link_libraries(${PROJECT_NAME}-virtual PUBLIC -lpthread -lusb-1.0)
 target_link_libraries(${PROJECT_NAME}-proxy PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
-target_link_libraries(${PROJECT_NAME}-proxy PUBLIC -lpthread)
+target_link_libraries(${PROJECT_NAME}-proxy PUBLIC -lpthread -lusb-1.0)
 
 add_subdirectory(external/DataFrame EXCLUDE_FROM_ALL)
 set(USE_EXE_FUNC ON)
@@ -127,13 +128,13 @@ add_definitions(-D__USE_POST_FUNC)
 
 # Link Unit Test executable with the library
 target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib DataFrame-lib)
-target_link_libraries(${PROJECT_NAME}-test PUBLIC ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} -lpthread)
+target_link_libraries(${PROJECT_NAME}-test PUBLIC ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} -lpthread -lusb-1.0)
 
 # Set compiler and linker flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -fPIC")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -g -O0 -fPIC")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fPIC")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -O3 -fPIC")
 set(CMAKE_USE_RELATIVE_PATHS OFF)
 
 # Add test
