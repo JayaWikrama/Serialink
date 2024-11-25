@@ -53,6 +53,15 @@ class Serialink : public Serial {
     Serialink();
 
     /**
+     * @brief Custom constructor.
+     *
+     * This constructor is used for specific purposes where the source device uses USB directly.
+     *
+     * @param usb The pointer of USB Serial Object.
+     */
+    Serialink(USBSerial *usb);
+
+    /**
      * @brief Destructor.
      *
      * Releases any allocated memory.

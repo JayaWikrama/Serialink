@@ -31,6 +31,20 @@
  * Initializes private data members and parameters to their default values.
  */
 Serialink::Serialink(){
+    this->usb = nullptr;
+    this->isFormatValid = true;
+    this->frameFormat = nullptr;
+}
+
+/**
+ * @brief Custom constructor.
+ *
+ * This constructor is used for specific purposes where the source device uses USB directly.
+ *
+ * @param usb The pointer of USB Serial Object.
+ */
+Serialink::Serialink(USBSerial *usb){
+    this->usb = usb;
     this->isFormatValid = true;
     this->frameFormat = nullptr;
 }

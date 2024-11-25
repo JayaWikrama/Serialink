@@ -157,6 +157,7 @@ Serial::Serial(){
     this->port = "/dev/ttyUSB0";
     pthread_mutex_init(&(this->mtx), NULL);
     pthread_mutex_init(&(this->wmtx), NULL);
+    this->usb = nullptr;
 }
 
 /**
@@ -181,6 +182,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
     this->port = port;
     pthread_mutex_init(&(this->mtx), NULL);
     pthread_mutex_init(&(this->wmtx), NULL);
+    this->usb = nullptr;
 }
 
 /**
@@ -196,7 +198,7 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
  * @param keepAliveMs Keep-alive interval in milliseconds.
  */
 Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs){
-    #if defined(PLATFORM_POSIX) || defined(__linux__)
+#if defined(PLATFORM_POSIX) || defined(__linux__)
     this->fd = -1;
 #endif
     this->baud = baud;
@@ -205,6 +207,27 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout, unsig
     this->port = port;
     pthread_mutex_init(&(this->mtx), NULL);
     pthread_mutex_init(&(this->wmtx), NULL);
+    this->usb = nullptr;
+}
+
+/**
+ * @brief Custom constructor.
+ *
+ * This constructor is used for specific purposes where the source device uses USB directly.
+ *
+ * @param usb The pointer of USB Serial Object.
+ */
+Serial::Serial(USBSerial *usb){
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    this->fd = -1;
+#endif
+    this->baud = B9600;
+    this->timeout = 10;
+    this->keepAliveMs = 0;
+    this->port = "/dev/ttyUSB0";
+    pthread_mutex_init(&(this->mtx), NULL);
+    pthread_mutex_init(&(this->wmtx), NULL);
+    this->usb = usb;
 }
 
 /**
@@ -224,6 +247,7 @@ Serial::~Serial(){
 #else
     CloseHandle(this->fd);
 #endif
+    if (this->usb != nullptr) delete (this->usb);
     pthread_mutex_unlock(&(this->mtx));
     pthread_mutex_unlock(&(this->wmtx));
     pthread_mutex_destroy(&(this->mtx));
@@ -343,6 +367,12 @@ unsigned int Serial::getKeepAlive(){
 int Serial::openPort(){
     pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
+    if (this->usb != nullptr){
+        int result = this->usb->openDevice();
+        pthread_mutex_unlock(&(this->wmtx));
+        pthread_mutex_unlock(&(this->mtx));
+        return result;
+    }
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     this->fd = open (this->port.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
 	if (this->fd <= 0)
@@ -387,6 +417,10 @@ int Serial::openPort(){
  */
 bool Serial::isInputBytesAvailable(){
     pthread_mutex_lock(&(this->mtx));
+    if (this->usb != nullptr){
+        pthread_mutex_unlock(&(this->mtx));
+        return true;
+    }
     long inputBytes = 0;
     if (ioctl(this->fd, FIONREAD, &inputBytes) != 0){
         pthread_mutex_unlock(&(this->mtx));
@@ -411,7 +445,7 @@ bool Serial::isInputBytesAvailable(){
 int Serial::readData(size_t sz, bool dontSplitRemainingData){
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
-    if (this->fd <= 0){
+    if (this->fd <= 0 && this->usb == nullptr){
         pthread_mutex_unlock(&(this->mtx));
         return 1;
     }
@@ -420,7 +454,7 @@ int Serial::readData(size_t sz, bool dontSplitRemainingData){
     long unsigned int bytes = 0;
 #endif
     int idx = 0;
-    unsigned char tmp[128];
+    unsigned char tmp[1024];
     this->data.clear();
     if (this->remainingData.size() > 0){
         this->data.assign(this->remainingData.begin(), this->remainingData.end());
@@ -451,7 +485,12 @@ int Serial::readData(size_t sz, bool dontSplitRemainingData){
             }
             pthread_mutex_lock(&(this->mtx));
         }
-    	bytes = read(this->fd, (void *) tmp, sizeof(tmp));
+        if (this->usb == nullptr){
+            bytes = read(this->fd, (void *) tmp, sizeof(tmp));
+        }
+        else {
+            bytes = this->usb->readDevice(tmp, sizeof(tmp));
+        }
 #else
         bool success = ReadFile(this->fd, tmp, sizeof(tmp), &bytes, NULL);
         if (success == false){
@@ -1015,7 +1054,7 @@ int Serial::writeData(const unsigned char *buffer, size_t sz){
     pthread_mutex_lock(&(this->wmtx));
     size_t total = 0;
 #if defined(PLATFORM_POSIX) || defined(__linux__)
-    if (this->fd <= 0){
+    if (this->fd <= 0 || this->usb == nullptr){
         pthread_mutex_unlock(&(this->wmtx));
         return 1;
     }
@@ -1025,7 +1064,12 @@ int Serial::writeData(const unsigned char *buffer, size_t sz){
 #endif
     while (total < sz){
 #if defined(PLATFORM_POSIX) || defined(__linux__)
-        bytes = write(this->fd, (void *) (buffer + total), sz - total);
+        if (this->usb == nullptr){
+            bytes = write(this->fd, (void *) (buffer + total), sz - total);
+        }
+        else {
+            bytes = this->usb->writeDevice(buffer + total, sz - total);
+        }
 #else
         bool success = WriteFile(this->fd, (buffer + total), sz - total, &bytes, NULL);
         if (success == false){
@@ -1097,8 +1141,13 @@ void Serial::closePort(){
     pthread_mutex_lock(&(this->wmtx));
     pthread_mutex_lock(&(this->mtx));
 #if defined(PLATFORM_POSIX) || defined(__linux__)
-    if (this->fd > 0) close(this->fd);
-    this->fd = -1;
+    if (this->usb == nullptr){
+        if (this->fd > 0) close(this->fd);
+        this->fd = -1;
+    }
+    else {
+        this->usb->closeDevice();
+    }
 #else
     CloseHandle(this->fd);
 #endif

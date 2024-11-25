@@ -52,6 +52,7 @@
 #ifndef __SERIAL_BASIC_HPP__
 #define __SERIAL_BASIC_HPP__
 
+#include "usb-serial.hpp"
 #include <vector>
 #if defined(PLATFORM_POSIX) || defined(__linux__)
 #include <pthread.h>
@@ -120,6 +121,7 @@ class Serial {
     pthread_mutex_t mtx;
     pthread_mutex_t wmtx;
   protected:
+    USBSerial *usb;
     std::vector <unsigned char> data;
     std::vector <unsigned char> remainingData;
     /**
@@ -185,6 +187,15 @@ class Serial {
      * @param keepAliveMs Keep-alive interval in milliseconds.
      */
     Serial(const std::string port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs);
+
+    /**
+     * @brief Custom constructor.
+     *
+     * This constructor is used for specific purposes where the source device uses USB directly.
+     *
+     * @param usb The pointer of USB Serial Object.
+     */
+    Serial(USBSerial *usb);
 
     /**
      * @brief Destructor.
