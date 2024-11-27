@@ -255,6 +255,17 @@ Serial::~Serial(){
 }
 
 /**
+ * @brief Sets link to USB Device pointer.
+ *
+ * This setter function configures USB device as serial device.
+ *
+ * @param usb The USB Serial device pointer.
+ */
+void Serial::setUSBDevice(USBSerial *usb){
+    this->usb = usb;
+}
+
+/**
  * @brief Sets the serial port device.
  *
  * This setter function configures the serial port device to be used for communication.

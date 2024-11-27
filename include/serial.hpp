@@ -206,6 +206,15 @@ class Serial {
     ~Serial();
 
     /**
+     * @brief Sets link to USB Device pointer.
+     *
+     * This setter function configures USB device as serial device.
+     *
+     * @param usb The USB Serial device pointer.
+     */
+    void setUSBDevice(USBSerial *usb);
+
+    /**
      * @brief Sets the serial port device.
      *
      * This setter function configures the serial port device to be used for communication.
