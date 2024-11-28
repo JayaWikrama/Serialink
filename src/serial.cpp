@@ -1065,7 +1065,7 @@ int Serial::writeData(const unsigned char *buffer, size_t sz){
     pthread_mutex_lock(&(this->wmtx));
     size_t total = 0;
 #if defined(PLATFORM_POSIX) || defined(__linux__)
-    if (this->fd <= 0 || this->usb == nullptr){
+    if (this->fd <= 0 && this->usb == nullptr){
         pthread_mutex_unlock(&(this->wmtx));
         return 1;
     }
