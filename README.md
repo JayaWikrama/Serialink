@@ -21,6 +21,14 @@ sudo apt install build-essential g++ binutils
 sudo apt install make cmake
 ```
 
+### Install USB Library
+
+1. Install libusb-1.0.0
+
+```bash
+sudo apt-get install libusb-1.0-0-dev
+```
+
 ### Installing Google Test
 
 1. Clone repository:
@@ -372,7 +380,7 @@ add_dependencies(${PROJECT_NAME} Serialink-lib)
 
 # Link the executable with the library
 target_link_libraries(${PROJECT_NAME} PRIVATE Serialink-lib DataFrame-lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC -lpthread -lusb-1.0)
 
 add_subdirectory(external/Serialink EXCLUDE_FROM_ALL)
 set(USE_EXE_FUNC ON)
