@@ -172,6 +172,20 @@ class Serial {
      * @param baud The baud rate for the serial communication.
      * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
      */
+    Serial(const char *port, speed_t baud, unsigned int timeout);
+
+    /**
+     * @brief Custom constructor.
+     *
+     * This constructor initializes private data members to their default values (except for `port`, `baud`, and `timeout`), including:
+     * - `fd = -1` : File descriptor is set to an invalid state.
+     * - `keepAliveMs = 0` : Keep-alive interval is set to 0 milliseconds.
+     * - Initializes the mutex for thread safety.
+     *
+     * @param port The serial port device (e.g., "/dev/ttyUSB0").
+     * @param baud The baud rate for the serial communication.
+     * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
+     */
     Serial(const std::string port, speed_t baud, unsigned int timeout);
 
     /**
@@ -187,6 +201,20 @@ class Serial {
      * @param keepAliveMs Keep-alive interval in milliseconds.
      */
     Serial(const std::string port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs);
+
+    /**
+     * @brief Custom constructor.
+     *
+     * This constructor initializes private data members to their default values (except for `port`, `baud`, `timeout`, and `keepAliveMs`), including:
+     * - `fd = -1` : File descriptor is set to an invalid state.
+     * - Initializes the mutex for thread safety.
+     *
+     * @param port The serial port device (e.g., "/dev/ttyUSB0").
+     * @param baud The baud rate for the serial communication.
+     * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
+     * @param keepAliveMs Keep-alive interval in milliseconds.
+     */
+    Serial(const char *port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs);
 
     /**
      * @brief Custom constructor.

@@ -172,6 +172,31 @@ Serial::Serial(){
  * @param baud The baud rate for the serial communication.
  * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
  */
+Serial::Serial(const char *port, speed_t baud, unsigned int timeout){
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    this->fd = -1;
+#endif
+    this->baud = baud;
+    this->timeout = timeout;
+    this->keepAliveMs = 0;
+    this->port = std::string(port);
+    pthread_mutex_init(&(this->mtx), NULL);
+    pthread_mutex_init(&(this->wmtx), NULL);
+    this->usb = nullptr;
+}
+
+/**
+ * @brief Custom constructor.
+ *
+ * This constructor initializes private data members to their default values (except for `port`, `baud`, and `timeout`), including:
+ * - `fd = -1` : File descriptor is set to an invalid state.
+ * - `keepAliveMs = 0` : Keep-alive interval is set to 0 milliseconds.
+ * - Initializes the mutex for thread safety.
+ *
+ * @param port The serial port device (e.g., "/dev/ttyUSB0").
+ * @param baud The baud rate for the serial communication.
+ * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
+ */
 Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     this->fd = -1;
@@ -180,6 +205,31 @@ Serial::Serial(const std::string port, speed_t baud, unsigned int timeout){
     this->timeout = timeout;
     this->keepAliveMs = 0;
     this->port = port;
+    pthread_mutex_init(&(this->mtx), NULL);
+    pthread_mutex_init(&(this->wmtx), NULL);
+    this->usb = nullptr;
+}
+
+/**
+ * @brief Custom constructor.
+ *
+ * This constructor initializes private data members to their default values (except for `port`, `baud`, `timeout`, and `keepAliveMs`), including:
+ * - `fd = -1` : File descriptor is set to an invalid state.
+ * - Initializes the mutex for thread safety.
+ *
+ * @param port The serial port device (e.g., "/dev/ttyUSB0").
+ * @param baud The baud rate for the serial communication.
+ * @param timeout Timeout value in units of 100 milliseconds (e.g., `10` equals 1 second).
+ * @param keepAliveMs Keep-alive interval in milliseconds.
+ */
+Serial::Serial(const char *port, speed_t baud, unsigned int timeout, unsigned int keepAliveMs){
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+    this->fd = -1;
+#endif
+    this->baud = baud;
+    this->timeout = timeout;
+    this->keepAliveMs = keepAliveMs;
+    this->port = std::string(port);
     pthread_mutex_init(&(this->mtx), NULL);
     pthread_mutex_init(&(this->wmtx), NULL);
     this->usb = nullptr;
