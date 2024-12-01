@@ -101,8 +101,12 @@ cd build
 6. Configure CMake:
 
 ```bash
-cmake ..
+cmake -DBUILD_TESTS=ON ..
 ```
+
+Notes:
+
+`-DBUILD_TESTS=ON` flags for create test apps. If you dont need test apps, just run `cmake ..`
 
 7. Build the library:
 
