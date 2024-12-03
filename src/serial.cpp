@@ -277,7 +277,11 @@ Serial::Serial(USBSerial *usb){
     this->port = "/dev/ttyUSB0";
     pthread_mutex_init(&(this->mtx), NULL);
     pthread_mutex_init(&(this->wmtx), NULL);
+#ifdef __USE_USB_SERIAL__
     this->usb = usb;
+#else
+    this->usb = nullptr;
+#endif
 }
 
 /**
@@ -312,7 +316,9 @@ Serial::~Serial(){
  * @param usb The USB Serial device pointer.
  */
 void Serial::setUSBDevice(USBSerial *usb){
+#ifdef __USE_USB_SERIAL__
     this->usb = usb;
+#endif
 }
 
 /**

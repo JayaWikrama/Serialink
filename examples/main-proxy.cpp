@@ -1,12 +1,13 @@
 #include <iostream>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 #include "virtual-proxy.hpp"
 
 void displayData(const std::vector <unsigned char> &data){
-    for (auto i = data.begin(); i < data.end(); ++i){
-        std::cout << std::hex << (int) *i;
-        std::cout << " ";
+    for (int i = 0; i < data.size(); i++){
+        if (i == 12 | i == data.size() - 3) printf("| ");
+        printf("%02X ", data[i]);
     }
     std::cout << std::endl;
 }
@@ -26,7 +27,7 @@ int main(int argc, char **argv){
         std::cout << "cmd: " << argv[0] << " <physicalPort>" << std::endl;
         exit(0);
     }
-    VirtualSerialProxy proxy(argv[1], B9600);
+    VirtualSerialProxy proxy(argv[1], B38400);
     proxy.setPassThrough(&passthroughFunc, nullptr);
     proxy.begin();
     return 0;

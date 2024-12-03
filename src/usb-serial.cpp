@@ -24,7 +24,9 @@
 #include <iostream>
 #include "usb-serial.hpp"
 
+#ifdef __USE_USB_SERIAL__
 #define REQUEST_TYPE_OUT (LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_OUT)
+#endif
 
 /**
  * @brief Configures serial devices attributes.
@@ -35,6 +37,7 @@
  * @return false if the configuration fails.
  */
 bool USBSerial::setupAttributes(){
+#ifdef __USE_USB_SERIAL__
   struct lineCoding {
     unsigned int baud;
     unsigned char stopBits;
@@ -61,6 +64,10 @@ bool USBSerial::setupAttributes(){
     return false;
   }
   return true;
+#else
+  std::cout << __func__ << ": USB Serial Feature is disabled!" << std::endl;
+  return false;
+#endif
 }
 
 /**
@@ -94,8 +101,10 @@ USBSerial::USBSerial(
   this->requestSetControlLinestate = requestSetControlLinestate;
   this->baudrate = baudrate;
   this->timeout = timeout;
+#ifdef __USE_USB_SERIAL__
   this->ctx = nullptr;
   this->handle = nullptr;
+#endif
 }
 
 /**
@@ -105,11 +114,13 @@ USBSerial::USBSerial(
  * It ensures that all allocated resources are properly freed, preventing memory leaks.
  */
 USBSerial::~USBSerial(){
+#ifdef __USE_USB_SERIAL__
   if (this->handle) this->closeDevice();
   if (this->ctx){
     libusb_exit(this->ctx);
     this->ctx = nullptr;
   }
+#endif
 }
 
 /**
@@ -121,6 +132,7 @@ USBSerial::~USBSerial(){
  * @return 1 if the device fails to open.
  */
 int USBSerial::openDevice(){
+#ifdef __USE_USB_SERIAL__
   int ret = 0;
   if (this->ctx == nullptr){
     ret = libusb_init(&(this->ctx));
@@ -147,6 +159,10 @@ int USBSerial::openDevice(){
     this->handle = nullptr;
   }
   return 0;
+#else
+  std::cout << __func__ << ": USB Serial Feature is disabled!" << std::endl;
+  return 1;
+#endif
 }
 
 /**
@@ -159,6 +175,7 @@ int USBSerial::openDevice(){
  * @return The total data successfully received.
  */
 size_t USBSerial::readDevice(unsigned char *buffer, size_t sz){
+#ifdef __USE_USB_SERIAL__
   int transferred = 0;
   int ret = 0;
   unsigned short partTimeout = 25;
@@ -185,6 +202,10 @@ size_t USBSerial::readDevice(unsigned char *buffer, size_t sz){
     std::cout << __func__ << ": Failed to read data: " << libusb_error_name(ret) << std::endl;
   }
   return total;
+#else
+  std::cout << __func__ << ": USB Serial Feature is disabled!" << std::endl;
+  return 0;
+#endif
 }
 
 /**
@@ -197,6 +218,7 @@ size_t USBSerial::readDevice(unsigned char *buffer, size_t sz){
  * @return The total data successfully send.
  */
 size_t USBSerial::writeDevice(const unsigned char *buffer, size_t sz){
+#ifdef __USE_USB_SERIAL__
   int transferred = 0;
   int ret = 0;
   unsigned short partTimeout = 25;
@@ -221,6 +243,10 @@ size_t USBSerial::writeDevice(const unsigned char *buffer, size_t sz){
     }
   }
   return total;
+#else
+  std::cout << __func__ << ": USB Serial Feature is disabled!" << std::endl;
+  return 0;
+#endif
 }
 
 /**
@@ -230,8 +256,12 @@ size_t USBSerial::writeDevice(const unsigned char *buffer, size_t sz){
  * are released.
  */
 void USBSerial::closeDevice(){
+#ifdef __USE_USB_SERIAL__
   if (this->handle != nullptr){
     libusb_close(this->handle);
     this->handle = nullptr;
   }
+#else
+  std::cout << __func__ << ": USB Serial Feature is disabled!" << std::endl;
+#endif
 }

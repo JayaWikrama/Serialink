@@ -44,7 +44,11 @@ Serialink::Serialink(){
  * @param usb The pointer of USB Serial Object.
  */
 Serialink::Serialink(USBSerial *usb){
+#ifdef __USE_USB_SERIAL__
     this->usb = usb;
+#else
+    this->usb = nullptr;
+#endif
     this->isFormatValid = true;
     this->frameFormat = nullptr;
 }

@@ -18,6 +18,9 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# Add an option to use USB Serial Module (default: OFF)
+option(USE_USB_SERIAL "Enable building for USB Serial Support" OFF)
+
 # Add an option to build tests (default: OFF)
 option(BUILD_TESTS "Enable building of unit tests" OFF)
 
@@ -28,6 +31,11 @@ if(BUILD_TESTS)
     URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip
   )
   FetchContent_MakeAvailable(googletest)
+endif()
+
+# Add definition to activate USB Serial Support
+if (USE_USB_SERIAL)
+  add_definitions(-D__USE_USB_SERIAL__)
 endif()
 
 # Verbose compile option
@@ -55,7 +63,9 @@ set_target_properties(${PROJECT_NAME}-lib PROPERTIES OUTPUT_NAME ${PROJECT_NAME}
 
 # Create example executables
 add_executable(${PROJECT_NAME} examples/main.cpp)
-add_executable(${PROJECT_NAME}-usb examples/main-usb-serial.cpp)
+if(USE_USB_SERIAL)
+  add_executable(${PROJECT_NAME}-usb examples/main-usb-serial.cpp)
+endif()
 add_executable(${PROJECT_NAME}-virtual examples/main-virtual.cpp)
 add_executable(${PROJECT_NAME}-proxy examples/main-proxy.cpp)
 
@@ -71,21 +81,33 @@ target_include_directories(${PROJECT_NAME}-lib PUBLIC ${INCLUDE_DIRS})
 # Add dependencies for examples
 add_dependencies(${PROJECT_NAME}-lib ${PROJECT_NAME}-ar)
 add_dependencies(${PROJECT_NAME} DataFrame-lib)
-add_dependencies(${PROJECT_NAME}-usb DataFrame-lib)
+if(USE_USB_SERIAL)
+  add_dependencies(${PROJECT_NAME}-usb DataFrame-lib)
+endif()
 add_dependencies(${PROJECT_NAME}-virtual DataFrame-lib)
 add_dependencies(${PROJECT_NAME}-proxy DataFrame-lib)
 
 # Link libraries to executables
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
-target_link_libraries(${PROJECT_NAME}-usb PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
-target_link_libraries(${PROJECT_NAME}-virtual PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
-target_link_libraries(${PROJECT_NAME}-proxy PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
+if(USE_USB_SERIAL)
+  target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
+  target_link_libraries(${PROJECT_NAME}-usb PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
+  target_link_libraries(${PROJECT_NAME}-virtual PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
+  target_link_libraries(${PROJECT_NAME}-proxy PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread -lusb-1.0)
+else()
+  target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread)
+  target_link_libraries(${PROJECT_NAME}-virtual PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread)
+  target_link_libraries(${PROJECT_NAME}-proxy PRIVATE ${PROJECT_NAME}-lib DataFrame-lib -lpthread)
+endif()
 
 # Add test configuration (only when tests are enabled)
 if(BUILD_TESTS)
   add_executable(${PROJECT_NAME}-test test/test-simple.cpp test/test-framed-data.cpp)
   target_include_directories(${PROJECT_NAME}-test PUBLIC ${INCLUDE_DIRS} ${GTest_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib DataFrame-lib gtest gtest_main -lpthread -lusb-1.0)
+  if(USE_USB_SERIAL)
+    target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib DataFrame-lib gtest gtest_main -lpthread -lusb-1.0)
+  else()
+    target_link_libraries(${PROJECT_NAME}-test PRIVATE ${PROJECT_NAME}-lib DataFrame-lib gtest gtest_main -lpthread)
+  endif()
   enable_testing()
   add_test(NAME example_test COMMAND ${PROJECT_NAME}-test)
 endif()

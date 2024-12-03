@@ -40,7 +40,9 @@
 #ifndef __USB_SERIAL_HPP__
 #define __USB_SERIAL_HPP__
 
+#ifdef __USE_USB_SERIAL__
 #include <libusb-1.0/libusb.h>
+#endif
 
 class USBSerial {
   private:
@@ -52,8 +54,10 @@ class USBSerial {
     unsigned char requestSetControlLinestate;
     unsigned short timeout;
     unsigned int baudrate;
+#ifdef __USE_USB_SERIAL__
     libusb_context *ctx;
     libusb_device_handle *handle;
+#endif
   
   protected:
     /**

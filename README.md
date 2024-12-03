@@ -106,7 +106,8 @@ cmake -DBUILD_TESTS=ON ..
 
 Notes:
 
-`-DBUILD_TESTS=ON` flags for create test apps. If you dont need test apps, just run `cmake ..`
+`-DBUILD_TESTS=ON` flags for create test apps. If you dont need test apps, just run `cmake ..`.
+`-DUSE_USB_SERIAL=ON` flags for activate support to USB Serial direct access.
 
 7. Build the library:
 
