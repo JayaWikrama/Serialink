@@ -62,7 +62,13 @@ add_library(${PROJECT_NAME}-lib SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-ar>)
 set_target_properties(${PROJECT_NAME}-lib PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 # Create example executables
-add_executable(${PROJECT_NAME} examples/main.cpp)
+add_executable(${PROJECT_NAME}
+  examples/framed-serial-protocol/src/main.cpp
+  examples/framed-serial-protocol/src/data-formating.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/framed-serial-protocol/include>)
+
 if(USE_USB_SERIAL)
   add_executable(${PROJECT_NAME}-usb examples/main-usb-serial.cpp)
 endif()

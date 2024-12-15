@@ -39,6 +39,7 @@
 
 #include "serial.hpp"
 #include "data-frame.hpp"
+#include "validator.hpp"
 
 class Serialink : public Serial {
   private:
