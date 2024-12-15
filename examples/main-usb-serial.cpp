@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string.h>
 #include <unistd.h>
 
@@ -10,9 +11,9 @@ const std::string errorMessage[] = {
     "Frame Format Has Not Been Setup"
 };
 
-void displayData(const std::vector <unsigned char> &data){
-    for (auto i = data.begin(); i < data.end(); ++i){
-        std::cout << std::hex << (int) *i;
+static void displayData(const unsigned char *data, size_t sz){
+    for (int i = 0; i < sz; i++) {
+        std::cout << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (int)(data[i]);
         std::cout << " ";
     }
     std::cout << std::endl;
@@ -27,7 +28,7 @@ void crc16(DataFrame &frame, void *ptr) {
     /* Get data from Start Bytes until Data */
     std::vector <unsigned char> data = obj->getSpecificBufferAsVector(DataFrame::FRAME_TYPE_START_BYTES, DataFrame::FRAME_TYPE_DATA);
     std::cout << "Data from which the CRC value will be calculated:" << std::endl;
-    displayData(data);
+    displayData(data.data(), data.size());
     /* Calculate crc16 */
     for (const auto &byte : data) {
         crc ^= (static_cast<unsigned short>(byte) << 8);
@@ -115,11 +116,11 @@ int main(int argc, char **argv){
             std::cout << "Invalid Received Data Details:" << std::endl;
             if (serial.getBuffer(data) > 0){
                 std::cout << "    Received Data: ";
-                displayData(data);
+                displayData(data.data(), data.size());
             }
             if (serial.getRemainingBuffer(data) > 0){
                 std::cout << "    Remaining Received Data: ";
-                displayData(data);
+                displayData(data.data(), data.size());
             }
             std::cout << std::endl;
         }
@@ -131,6 +132,6 @@ int main(int argc, char **argv){
     serial.getFormat()->getAllData(data);
     std::cout << "Received Success [" + std::to_string(serial.getDataSize()) + "]" << std::endl;
     std::cout << "    Data: ";
-    displayData(data);
+    displayData(data.data(), data.size());
     return 0;
 }

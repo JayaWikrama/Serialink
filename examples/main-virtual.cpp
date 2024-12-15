@@ -1,7 +1,16 @@
 #include <iostream>
 #include <string.h>
 #include <unistd.h>
+#include <iomanip>
 #include "virtuser.hpp"
+
+static void displayData(const unsigned char *data, size_t sz){
+  for (int i = 0; i < sz; i++) {
+    std::cout << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (int)(data[i]);
+    std::cout << " ";
+  }
+  std::cout << std::endl;
+}
 
 void callbackEcho(VirtualSerial &ser, void *param){
     unsigned char buffer[1024];
@@ -15,8 +24,8 @@ void callbackEcho(VirtualSerial &ser, void *param){
             std::cout << "Received: " << std::to_string(sz) << " bytes" << std::endl;
             if (sz > 0){
                 buffer[sz] = 0x00;
-                std::cout << (const char *) buffer << std::endl;
-                ser.writeData((const unsigned char *) "\x10\x02\x0A\x05\x19\x00\x00\x00\x00\x00\x09\x00\x04\x00\x28\x04\xAF\x3D\xE7\x52\x10\x10\x10\x03", 24);
+                displayData(buffer, sz);
+                ser.writeData(buffer, sz);
             }
         }
         else {
@@ -32,7 +41,7 @@ int main(int argc, char **argv){
         std::cout << "cmd: " << argv[0] << " <timeout100ms> <keepAliveMs>" << std::endl;
         exit(0);
     }
-    VirtualSerial serial(B38400, atoi(argv[1]), atoi(argv[2]));
+    VirtualSerial serial(B115200, atoi(argv[1]), atoi(argv[2]));
     serial.setCallback((const void *) &callbackEcho, nullptr);
     serial.begin();
     return 0;
