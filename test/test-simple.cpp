@@ -1071,6 +1071,26 @@ TEST_F(SerialinkSimpleTest, negativeWriteAndRead_no_input_bytes_available) {
     ASSERT_EQ(tmp.size(), 0);
 }
 
+TEST_F(SerialinkSimpleTest, negativeWriteAndRead_startBytes_noData_1) {
+    unsigned char buffer[8];
+    pthread_t thread;
+    std::vector <unsigned char> tmp;
+    struct timeval tvStart, tvEnd;
+    int diffTime = 0;
+    slave.setPort(master.getVirtualPortName());
+    slave.setBaudrate(B115200);
+    slave.setTimeout(25);
+    slave.setKeepAlive(50);
+    gettimeofday(&tvStart, NULL);
+    ASSERT_EQ(slave.openPort(), 0);
+    ASSERT_EQ(slave.writeData((const unsigned char *) "qwerty1234567890", 16), 0);
+    ASSERT_EQ(slave.readStartBytes(std::string("1234")), 2);
+    gettimeofday(&tvEnd, NULL);
+    diffTime = (tvEnd.tv_sec - tvStart.tv_sec) * 1000 + (tvEnd.tv_usec - tvStart.tv_usec) / 1000;
+    ASSERT_EQ(diffTime >= 2400 && diffTime <= 2600, true);
+    ASSERT_EQ(slave.getDataSize(), 0);
+}
+
 TEST_F(SerialinkSimpleTest, negativeWriteAndRead_stopBytes) {
     unsigned char buffer[32];
     pthread_t thread;
